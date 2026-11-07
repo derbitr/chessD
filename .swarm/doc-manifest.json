@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "scanned_at": "2026-10-17T00:59:18.704Z",
+  "files": [
+    {
+      "path": "docs/superpowers/plans/2026-10-12-chess-mobile-app-plan.md",
+      "title": "Plano de Execução Detalhado: Aplicativo Mobile de Xadrez Soberano (Android)",
+      "summary": "**Data:** 13 de Outubro de 2026 **Documento de Design de Referência:** [`docs/superpowers/specs/2026-10-12-chess-mobile-app-design.md`](file:///C:/Users/Breno/.gemini/antigravity/scratch/chess-app/...",
+      "lines": 208,
+      "mtime": 1791900190187.7798
+    },
+    {
+      "path": "docs/superpowers/specs/2026-10-12-chess-mobile-app-design.md",
+      "title": "Especificação de Design: Aplicativo Mobile de Xadrez Soberano (Android)",
+      "summary": "**Data:** 13 de Outubro de 2026 **Status:** Definitivo, Aprovado & Blindado com Skills Especializadas **Alvo:** Android **Repositório/Workspace:** `C:\\Users\\Breno\\.gemini\\antigravity\\scratch\\chess-...",
+      "lines": 95,
+      "mtime": 1791900151536.6897
+    }
+  ]
+}

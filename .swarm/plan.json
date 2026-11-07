@@ -1,0 +1,580 @@
+{
+  "schema_version": "1.0.0",
+  "title": "Aplicativo Mobile de Xadrez Soberano (Android)",
+  "swarm": "default",
+  "current_phase": 1,
+  "phases": [
+    {
+      "id": 1,
+      "name": "Fundação Flutter, Toolchain Nativa & Stockfish NNUE via FFI",
+      "status": "in_progress",
+      "tasks": [
+        {
+          "id": "1.1",
+          "phase": 1,
+          "status": "in_progress",
+          "size": "medium",
+          "description": "Cobertura FR-001: scaffolding Flutter Android-only (package com.soberano.chess): minSdk 24, targetSdk 35, compileSdk 35, Kotlin, .gitignore, lint; app mínimo compilável. PINs de toolchain no README: NDK r27, CMake >=3.22.",
+          "depends": [],
+          "files_touched": [
+            ".gitignore",
+            "analysis_options.yaml",
+            "android/app/build.gradle.kts",
+            "android/app/src/main/AndroidManifest.xml",
+            "lib/main.dart",
+            "pubspec.yaml"
+          ]
+        },
+        {
+          "id": "1.2",
+          "phase": 1,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-001: baseline de arquitetura — go_router (shell + rotas), Riverpod (state mgmt/DI), logging e error handling centralizados; responsividade mobile-first.",
+          "depends": [
+            "1.1"
+          ],
+          "files_touched": [
+            "lib/data/services/logger_service.dart",
+            "lib/ui/core/app_shell.dart",
+            "lib/ui/core/router.dart",
+            "pubspec.yaml"
+          ]
+        },
+        {
+          "id": "1.3",
+          "phase": 1,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-002 (pipeline nativo): externalNativeBuild CMake no Gradle (NDK r27, CMake 3.22+), abiFilters [arm64-v8a, x86_64], lib native_smoke (função C trivial) validando o build nativo ponta a ponta via FFI smoke test.",
+          "depends": [
+            "1.1"
+          ],
+          "files_touched": [
+            "android/app/build.gradle.kts",
+            "android/app/src/main/cpp/CMakeLists.txt",
+            "android/app/src/main/cpp/native_smoke.cpp",
+            "lib/data/services/native_lib_loader.dart"
+          ]
+        },
+        {
+          "id": "1.4",
+          "phase": 1,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-002: integrar Stockfish NNUE C++ on-device + driver UCI C-ABI (uci/isready/position/go/stop/bestmove), flags -O3 -flto -march=armv8-a+simd (arm64-v8a); pesos NNUE em assets/engine/ com SHA-256 no manifest; ownership de memória FFI documentado.",
+          "depends": [
+            "1.3"
+          ],
+          "files_touched": [
+            "android/app/src/main/cpp/stockfish",
+            "android/app/src/main/cpp/stockfish_driver.cpp",
+            "assets/engine/manifest.json"
+          ]
+        },
+        {
+          "id": "1.5",
+          "phase": 1,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-002: bindings Dart FFI + StockfishService assíncrono em dart:isolate (canal UCI, parser FEN/lances com pattern matching Dart 3) — UI nunca bloqueia.",
+          "depends": [
+            "1.4"
+          ],
+          "files_touched": [
+            "lib/data/services/bridge/stockfish_ffi_bindings.dart",
+            "lib/data/services/bridge/uci_message.dart",
+            "lib/data/services/stockfish_service.dart",
+            "lib/domain/models/engine_evaluation.dart"
+          ]
+        },
+        {
+          "id": "1.6",
+          "phase": 1,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-012: política térmica/bateria (profundidade dinâmica 10-12 óbvios / 16-20 complexos) com clock injetável + cache LRU de transposições; testes determinísticos sem sleeps reais.",
+          "depends": [
+            "1.5"
+          ],
+          "files_touched": [
+            "lib/data/services/stockfish_thermal_policy.dart",
+            "lib/data/services/transposition_cache.dart",
+            "test/thermal_policy_test.dart"
+          ]
+        },
+        {
+          "id": "1.7",
+          "phase": 1,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-008: bots Elo 250-2800 humanizados (Skill Level, UCI_LimitStrength, imprecisões, delay 1-3s) com seed param + BOT_TEST_MODE; perfis Agressivo/Posicional/Mestre Clássico; TDD.",
+          "depends": [
+            "1.5"
+          ],
+          "files_touched": [
+            "lib/domain/models/bot_profile.dart",
+            "lib/domain/use_cases/select_bot_move.dart",
+            "test/bot_profile_test.dart",
+            "test/select_bot_move_test.dart"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Design System & Pipeline de Conteúdo híbrido + Zstandard",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "2.1",
+          "phase": 2,
+          "status": "pending",
+          "size": "medium",
+          "description": "Design System: tokens Obsidian #0B0F17, Slate #151C28, Ciano #00E5FF, Carmesim #FF1744, contraste >=12:1, variantes de tabuleiro (Verde Torneio/Nogal/Escuro).",
+          "depends": [
+            "1.2"
+          ],
+          "files_touched": [
+            "lib/ui/core/app_colors.dart",
+            "lib/ui/core/app_typography.dart",
+            "lib/ui/core/chess_theme.dart"
+          ]
+        },
+        {
+          "id": "2.2",
+          "phase": 2,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-010 e FR-005: taxonomia REA clean-room (4 módulos: Fundamentos, Táticas, Finais, Estratégia) + síntese didática 100% original (pílulas 1-2min + 5-10 exercícios única-solução por nó), sem assets/textos proprietários.",
+          "depends": [],
+          "files_touched": [
+            "assets/lessons/lessons.json",
+            "lib/data/models/lesson.dart"
+          ]
+        },
+        {
+          "id": "2.3",
+          "phase": 2,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-003 e FR-006 (base de dados de puzzles): ETL de 20.000 puzzles — normalização (fen/moves UCI/rating/themes), dedupe, validação de solução única, saída intermediária revisável. Sem gerar assets no repo.",
+          "depends": [],
+          "files_touched": [
+            "tool/prepare_puzzles.py"
+          ]
+        },
+        {
+          "id": "2.4",
+          "phase": 2,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-003: empacotamento offline das 20k puzzles (codificação 16-bit + Zstandard .zst + SHA-256 no manifest, embarcado no APK); repository carrega/valida e consulta por tema/rating <5ms — funcional em modo avião.",
+          "depends": [
+            "2.3",
+            "1.3"
+          ],
+          "files_touched": [
+            "assets/puzzles/manifest.json",
+            "assets/puzzles/puzzles_20k.db",
+            "lib/data/repositories/puzzle_repository.dart",
+            "tool/package_puzzles.py"
+          ]
+        },
+        {
+          "id": "2.5",
+          "phase": 2,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-009 (persistência): SQLite/Drift — schema de partidas/histórico, progresso da trilha, métricas, repertório; migrations e índices, 100% local/offline.",
+          "depends": [
+            "1.1"
+          ],
+          "files_touched": [
+            "lib/data/models/drift_tables.dart",
+            "lib/data/repositories/app_database.dart",
+            "pubspec.yaml"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Tabuleiro 120 FPS, Modos Especiais & P2P",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "3.1",
+          "phase": 3,
+          "status": "pending",
+          "size": "large",
+          "description": "ChessBoardWidget: 8x8 fluido, drag/tap, legal moves, premove, animações <120ms com reduced-motion; widget test.",
+          "depends": [
+            "2.1"
+          ],
+          "files_touched": [
+            "lib/ui/features/board/board_theme.dart",
+            "lib/ui/features/board/chess_board_widget.dart",
+            "test/chess_board_test.dart"
+          ]
+        },
+        {
+          "id": "3.2",
+          "phase": 3,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-013: motor de regras local completo (roque normal, en passant, promoção, afogamento, 50 lances, repetição tripla) com TDD rigoroso.",
+          "depends": [
+            "1.1"
+          ],
+          "files_touched": [
+            "lib/domain/chess_engine/move_generator.dart",
+            "lib/domain/chess_engine/position.dart",
+            "test/rules_engine_test.dart"
+          ]
+        },
+        {
+          "id": "3.3",
+          "phase": 3,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-008: tela de partida vs bots — seletor bot/avatar/Elo, relógio (bullet/blitz/rapid/livre), sons e háptica.",
+          "depends": [
+            "1.7",
+            "3.1",
+            "3.2"
+          ],
+          "files_touched": [
+            "lib/ui/features/game/bot_match_screen.dart"
+          ]
+        },
+        {
+          "id": "3.4",
+          "phase": 3,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-022: Xadrez 960 (gerador posições 0-959 + regras de roque 960), Modo Às Cegas, Treinador de Coordenadas (30s, zona do polegar).",
+          "depends": [
+            "3.2"
+          ],
+          "files_touched": [
+            "lib/domain/chess_engine/chess960.dart",
+            "lib/ui/features/game/blindfold_screen.dart",
+            "lib/ui/features/training/coordinate_trainer_screen.dart"
+          ]
+        },
+        {
+          "id": "3.5",
+          "phase": 3,
+          "status": "pending",
+          "size": "small",
+          "description": "Cobertura FR-019: Pass & Play com tabuleiro espelhado e relógio tátil duplo.",
+          "depends": [
+            "3.3"
+          ],
+          "files_touched": [
+            "lib/ui/features/game/pass_and_play_screen.dart"
+          ]
+        },
+        {
+          "id": "3.6",
+          "phase": 3,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-020: P2P local Bluetooth RFCOMM/Wi-Fi Direct com troca de lances <15ms; permissões Android 31+ (BLUETOOTH_CONNECT, BLUETOOTH_SCAN, ACCESS_FINE_LOCATION runtime) declaradas e tratadas.",
+          "depends": [
+            "3.2"
+          ],
+          "files_touched": [
+            "android/app/src/main/AndroidManifest.xml",
+            "lib/data/services/p2p_service.dart",
+            "lib/ui/features/game/p2p_match_screen.dart"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Trilha Duolingo & Modos de Treino",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "4.1",
+          "phase": 4,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-005: trilha vertical Duolingo — nós (bloqueado/disponível/estrelas 1-3), desbloqueio sequencial, curvas conectivas, progresso persistido no Drift.",
+          "depends": [
+            "2.2",
+            "2.5"
+          ],
+          "files_touched": [
+            "lib/data/repositories/progress_repository.dart",
+            "lib/domain/models/lesson_progress.dart",
+            "lib/ui/features/learning/learning_track_screen.dart"
+          ]
+        },
+        {
+          "id": "4.2",
+          "phase": 4,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-005: tela de Lição — teoria rápida + demonstração na posição + 5-10 exercícios com barra de progresso + chefão por módulo.",
+          "depends": [
+            "4.1",
+            "3.1"
+          ],
+          "files_touched": [
+            "lib/ui/features/learning/lesson_screen.dart"
+          ]
+        },
+        {
+          "id": "4.3",
+          "phase": 4,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-006 e FR-004: puzzles infinitos com rating tático adaptativo, sem limite diário/energia/lives — jogável indefinidamente offline.",
+          "depends": [
+            "4.1",
+            "2.4"
+          ],
+          "files_touched": [
+            "lib/domain/use_cases/update_tactical_rating.dart",
+            "lib/ui/features/training/infinite_puzzles_screen.dart"
+          ]
+        },
+        {
+          "id": "4.4",
+          "phase": 4,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-007: escada de problemas — sobrevivência (dificuldade crescente, 3 erros) ou cronometrada (3/5min) com combo streak e recordes locais.",
+          "depends": [
+            "4.3"
+          ],
+          "files_touched": [
+            "lib/data/repositories/ladder_records_repository.dart",
+            "lib/ui/features/training/puzzle_ladder_screen.dart"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Análise Profunda, Coach IA & Share Card",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "5.1",
+          "phase": 5,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-009: gravação de partidas completas (PGN, resultado, precisão, metadados) no histórico local ilimitado e offline (FR-003).",
+          "depends": [
+            "2.5",
+            "3.3"
+          ],
+          "files_touched": [
+            "lib/data/repositories/game_repository.dart"
+          ]
+        },
+        {
+          "id": "5.2",
+          "phase": 5,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-009 e FR-004: análise pós-jogo assíncrona (depth 16-18) ilimitada e sem paywall — gráfico centipawn, Accuracy %, classificação de lances (!!/melhor/excelente/?!/erro/??), navegação por lance.",
+          "depends": [
+            "1.5",
+            "5.1"
+          ],
+          "files_touched": [
+            "lib/domain/use_cases/analyze_game.dart",
+            "lib/ui/features/analysis/eval_chart.dart",
+            "lib/ui/features/analysis/game_review_screen.dart"
+          ]
+        },
+        {
+          "id": "5.3",
+          "phase": 5,
+          "status": "pending",
+          "size": "medium",
+          "description": "Coach IA: explicações pedagógicas em pt-BR para erros/gafes (causa tática do blunder).",
+          "depends": [
+            "5.2"
+          ],
+          "files_touched": [
+            "lib/data/services/ai_coach_service.dart"
+          ]
+        },
+        {
+          "id": "5.4",
+          "phase": 5,
+          "status": "pending",
+          "size": "small",
+          "description": "Cobertura FR-021: card visual compartilhável (PNG/JPG) com resumo da partida, precisão e lances brilhantes.",
+          "depends": [
+            "5.2"
+          ],
+          "files_touched": [
+            "lib/ui/features/analysis/share_card_widget.dart"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Módulos de Elite & Repetição Espaçada (SRS)",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "6.1",
+          "phase": 6,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-014: SRS SM-2 (intervalos 1/3/7/14 dias) para repertório de aberturas, com clock injetável e testes determinísticos.",
+          "depends": [
+            "2.5"
+          ],
+          "files_touched": [
+            "lib/data/repositories/repertoire_repository.dart",
+            "lib/domain/use_cases/schedule_spaced_review.dart",
+            "test/sm2_scheduler_test.dart"
+          ]
+        },
+        {
+          "id": "6.2",
+          "phase": 6,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-015: explorador de aberturas ilimitado (Polyglot/ECO) com taxas de vitória, sem corte de profundidade.",
+          "depends": [
+            "6.1"
+          ],
+          "files_touched": [
+            "assets/openings/openings.db",
+            "lib/data/repositories/opening_repository.dart",
+            "lib/ui/features/repertoire/opening_explorer_screen.dart"
+          ]
+        },
+        {
+          "id": "6.3",
+          "phase": 6,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-016: Retry Mistakes — extrai gafes/erros das partidas salvas e gera puzzles de correção.",
+          "depends": [
+            "5.2"
+          ],
+          "files_touched": [
+            "lib/domain/use_cases/extract_mistake_puzzles.dart",
+            "lib/ui/features/analysis/retry_mistakes_screen.dart"
+          ]
+        },
+        {
+          "id": "6.4",
+          "phase": 6,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-017: radar de fraquezas por fase do jogo, cor e tipo de tática sofrida.",
+          "depends": [
+            "5.2"
+          ],
+          "files_touched": [
+            "lib/ui/features/analysis/weakness_radar_screen.dart"
+          ]
+        },
+        {
+          "id": "6.5",
+          "phase": 6,
+          "status": "pending",
+          "size": "medium",
+          "description": "Finais teóricos (Lucena, Philidor, oposição, mates elementares) contra defesa perfeita do Stockfish.",
+          "depends": [
+            "1.7",
+            "3.2"
+          ],
+          "files_touched": [
+            "assets/endgames/endgames.json",
+            "lib/ui/features/training/endgame_drills_screen.dart"
+          ]
+        },
+        {
+          "id": "6.6",
+          "phase": 6,
+          "status": "pending",
+          "size": "small",
+          "description": "Cobertura FR-018: importador de partidas — colar PGN livre + API pública Chess.com/Lichess por username.",
+          "depends": [
+            "5.1"
+          ],
+          "files_touched": [
+            "lib/data/services/pgn_importer.dart",
+            "lib/ui/features/analysis/import_screen.dart"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Offline, Downloader 4M+ & Build do APK",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "7.1",
+          "phase": 7,
+          "status": "pending",
+          "size": "large",
+          "description": "Cobertura FR-011: downloader de pacotes 4M+ puzzles .zst sob demanda (mirrors públicos GitHub Releases/HuggingFace) com SHA-256 e decompactação em background.",
+          "depends": [
+            "2.4"
+          ],
+          "files_touched": [
+            "lib/data/services/puzzle_downloader.dart",
+            "lib/ui/settings/packs_manager_screen.dart"
+          ]
+        },
+        {
+          "id": "7.2",
+          "phase": 7,
+          "status": "pending",
+          "size": "small",
+          "description": "Cobertura FR-012: otimização de bateria — threads 1-2 e hash 16-64MB adaptáveis ao dispositivo.",
+          "depends": [
+            "1.5"
+          ],
+          "files_touched": [
+            "lib/data/services/stockfish_service.dart"
+          ]
+        },
+        {
+          "id": "7.3",
+          "phase": 7,
+          "status": "pending",
+          "size": "medium",
+          "description": "Cobertura FR-003 (verificação final): suíte widget/integration tests (serial, 1 arquivo por rodada) e flutter build apk --release <60MB, 100% funcional em modo avião.",
+          "depends": [
+            "7.1",
+            "7.2"
+          ],
+          "files_touched": [
+            "android/app/build.gradle.kts",
+            "test"
+          ]
+        }
+      ]
+    }
+  ],
+  "migration_status": "native",
+  "specMtime": "2026-10-17T01:16:59.587Z",
+  "specHash": "d9cb9d408fe3f0b7373d2c9bc0780cac5c7efe0ff1c6847a0bdfca897983c1b5",
+  "execution_profile": {
+    "parallelization_enabled": true,
+    "max_concurrent_tasks": 10,
+    "council_parallel": true,
+    "locked": false,
+    "auto_proceed": false,
+    "commit_after_each_completed_task": false,
+    "planning_profile": "balanced"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "1.1": {
+    "outcome": "failed",
+    "stage": "task-result",
+    "message": "task terminated with error"
+  },
+  "6.1": {
+    "outcome": "failed",
+    "stage": "task-result",
+    "message": "task terminated with error"
+  }
+}

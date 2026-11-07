@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "bindingId": "a8feb380-0128-46f8-80ac-f7c67aff10c6",
+  "generationId": "92f89895-37b8-4c2f-ae5b-188cf181bdb9",
+  "revision": 2,
+  "lifecycleState": "superseded",
+  "workspaceIdentity": "c:/users/breno/.gemini/antigravity/scratch/chess-app",
+  "planId": "default-Aplicativo_Mobile_de_Xadrez_Soberano__Android_",
+  "planStructureHash": "b08aac4f982f287fef34e70cbc7585b1a3818e072aed0cf1a40ac3992fb9944c",
+  "taskId": "1.1",
+  "ownerSessionId": "ses_ebd41ecabffebF426rlnQsLPHQ",
+  "ownerMessageId": "msg_14799cdbe001nWBnLIrkNwIDoy",
+  "activation": "declaration",
+  "source": "declare_scope",
+  "files": [
+    ".gitignore",
+    "README.md",
+    "analysis_options.yaml",
+    "android",
+    "lib",
+    "pubspec.yaml",
+    "test"
+  ],
+  "declaredAt": 1792202656018,
+  "updatedAt": 1792202661786,
+  "leaseStartedAt": 1792202656018,
+  "expiresAt": 1792202661786
+}

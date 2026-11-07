@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "id": "5cb3948b-3b69-422d-88ae-5890170fd343",
+      "verdict": "approved",
+      "reviewed_at": "2026-10-17T01:12:46.804Z",
+      "scope_hash": "e07b4e24197354ad32cc711b1493eae925dae963a70d638013ba507952cf76cb",
+      "agent": "curator",
+      "filename": "2026-10-17-5cb3948b-3b69-422d-88ae-5890170fd343.json"
+    },
+    {
+      "id": "547bcf1b-1525-432d-9e95-ac048f238e24",
+      "verdict": "approved",
+      "reviewed_at": "2026-10-17T01:50:17.296Z",
+      "scope_hash": "f3afb9debbaeadc142a453af44f459bc6dd55e571a1e7aed86c442142262d1db",
+      "agent": "curator",
+      "filename": "2026-10-17-547bcf1b-1525-432d-9e95-ac048f238e24.json"
+    },
+    {
+      "id": "83b221fb-5acc-446c-957a-fc05ab878d0d",
+      "verdict": "approved",
+      "reviewed_at": "2026-10-17T01:56:15.269Z",
+      "scope_hash": "92359d27d00cae636213b2067169ab8f114ef60cada6982c6522debd9ca3acf4",
+      "agent": "curator",
+      "filename": "2026-10-17-83b221fb-5acc-446c-957a-fc05ab878d0d.json"
+    }
+  ]
+}

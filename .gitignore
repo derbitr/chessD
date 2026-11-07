@@ -1,0 +1,13 @@
+# Flutter and Dart
+.dart_tool/
+.packages
+build/
+*.lock
+
+# Rust
+rust_core/target/
+
+# IDE
+.vscode/
+.idea/
+*.iml
