@@ -359,7 +359,7 @@ O arquivo gerado estará localizado em:
 | Artefato | Plataforma | Descrição | SHA-256 |
 | :--- | :--- | :--- | :--- |
 | `chess-democratico-v1.0.0-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `soberano_chess.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `EF64DE7DEE88BB5CDCC361F626629F6F51B3149CEB01C3FA2DE32913C04DBDCA` |
-| `chess-democratico-v1.0.0-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (gerado via pipeline de compilação com suporte a arm64-v8a e armeabi-v7a) | Verificado via GitHub Actions CI/CD |
+| `chess-democratico-v1.0.0-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (com bibliotecas nativas arm64-v8a, armeabi-v7a e x86_64) | `1B486AE96174625D214F29E9171DD271B076140F826E074CBCF63F7206770A1C` |
 
 ### 8.3 Instruções de Instalação e Execução
 
