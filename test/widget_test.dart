@@ -12,7 +12,7 @@ void main() {
     await tester.pumpWidget(const SoberanoChessApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('CHESS DEMOCRÁTICO'), findsOneWidget);
+    expect(find.text('chessD'), findsOneWidget);
     expect(find.text('Trilha de Maestria (Estilo Duolingo)'), findsOneWidget);
     expect(find.text('Quebra-Cabeças Infinitos'), findsOneWidget);
     expect(find.text('Escada de Problemas (Rush 3 Vidas)'), findsOneWidget);

@@ -122,7 +122,7 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'CHESS DEMOCRÁTICO',
+                                        'chessD',
                                         style: AppTypography.titleMedium.copyWith(
                                           letterSpacing: 1.0,
                                           color: AppColors.secondaryAmber,
@@ -316,7 +316,7 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                         children: [
                           const Expanded(
                             child: Text(
-                              'chessdemocratico.app • @chessdemocratico',
+                              'chessd.app • @chessd',
                               style: AppTypography.labelSmall,
                               overflow: TextOverflow.ellipsis,
                             ),

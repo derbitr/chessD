@@ -1,4 +1,4 @@
-# Script de compilacao para Windows do Soberano Chess
+# Script de compilacao para Windows do chessD
 $ErrorActionPreference = "Stop"
 
 Write-Host "Iniciando compilacao do Rust Core..."
@@ -14,7 +14,7 @@ $releaseDir = "$PSScriptRoot\..\build\windows\x64\runner\Release"
 Copy-Item "$PSScriptRoot\..\rust_core\target\release\rust_core.dll" -Destination "$releaseDir\rust_core.dll" -Force
 
 Write-Host "Criando pacote zip portatil..."
-$zipPath = "$PSScriptRoot\..\build\soberano-chess-v1.0.0-windows-x64.zip"
+$zipPath = "$PSScriptRoot\..\build\chessD-v1.0.1-windows-x64.zip"
 Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipPath -Force
 
 Write-Host "Concluido com sucesso: $zipPath"

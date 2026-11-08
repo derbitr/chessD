@@ -71,7 +71,7 @@ class WifiCastServer {
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Chess Democrático • Wi-Fi Cast</title>
+  <title>chessD • Wi-Fi Cast</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { background: #0B0F17; color: #F8FAFC; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
@@ -84,7 +84,7 @@ class WifiCastServer {
 <body>
   <div class="box">
     <div class="badge">TRANSMISSÃO AO VIVO • WI-FI CAST</div>
-    <h1>CHESS DEMOCRÁTICO</h1>
+    <h1>chessD</h1>
     <p>Partida sincronizada em tempo real via rede local sem internet.</p>
     <div class="fen" id="fen">$_currentFen</div>
     <p id="moves">Lances: ${_movesHistory.length}</p>

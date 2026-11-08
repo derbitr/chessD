@@ -63,14 +63,14 @@ jobs:
 
       - name: Stage Android APK
         run: |
-          cp build/app/outputs/flutter-apk/app-release.apk chess-democratico-v1.0.0-android.apk
-          ls -lh chess-democratico-v1.0.0-android.apk
+          cp build/app/outputs/flutter-apk/app-release.apk chessD-${{ github.ref_name }}-android.apk
+          ls -lh chessD-${{ github.ref_name }}-android.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: chess-democratico-android-apk
-          path: chess-democratico-v1.0.0-android.apk
+          name: chessD-android-apk
+          path: chessD-${{ github.ref_name }}-android.apk
 
   build-windows:
     name: Build Windows x64 Executable
@@ -103,13 +103,13 @@ jobs:
       - name: Package Windows Release Bundle
         run: |
           Copy-Item "rust_core\target\release\rust_core.dll" -Destination "build\windows\x64\runner\Release\rust_core.dll" -Force
-          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "chess-democratico-v1.0.0-windows-x64.zip" -Force
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "chessD-${{ github.ref_name }}-windows-x64.zip" -Force
 
       - name: Upload Windows Bundle Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: chess-democratico-windows-bundle
-          path: chess-democratico-v1.0.0-windows-x64.zip
+          name: chessD-windows-bundle
+          path: chessD-${{ github.ref_name }}-windows-x64.zip
 
   publish-release:
     name: Publish GitHub Release
@@ -122,17 +122,17 @@ jobs:
       - name: Download Android Artifact
         uses: actions/download-artifact@v4
         with:
-          name: chess-democratico-android-apk
+          name: chessD-android-apk
           path: ./release-assets
 
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
-          name: chess-democratico-windows-bundle
+          name: chessD-windows-bundle
           path: ./release-assets
 
       - name: Upload to Existing Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload v1.0.0 ./release-assets/* --clobber || gh release create v1.0.0 ./release-assets/* --title "Chess Democrático v1.0.0" --notes "Release oficial do Chess Democrático."
+          gh release upload ${{ github.ref_name }} ./release-assets/* --clobber || gh release create ${{ github.ref_name }} ./release-assets/* --title "chessD ${{ github.ref_name }}" --notes "Release oficial do chessD."

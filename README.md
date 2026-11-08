@@ -1,4 +1,4 @@
-# Chess Democrático
+# chessD
 
 Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica de partidas, desenvolvida com Flutter 3.47 e Rust 1.96. Totalmente offline, soberana e sem cobrança por recursos analíticos.
 
@@ -6,15 +6,15 @@ Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica 
 
 ## 1. Visão Geral do Projeto
 
-O Chess Democrático é um aplicativo de xadrez de alta performance projetado sob o princípio da soberania digital do usuário. Ao contrário de plataformas comerciais baseadas em assinaturas recorrentes (como as modalidades Platinum e Diamond de plataformas online), o Chess Democrático executa 100% das suas rotinas de validação de regras FIDE, geração de lances, busca minimax, árvores de abertura, repetição espaçada e cálculo de precisão algorítmica diretamente no dispositivo do usuário, sem emitir telemetria nem demandar conexão com a internet.
+O chessD é um aplicativo de xadrez de alta performance projetado sob o princípio da soberania digital do usuário. Ao contrário de plataformas comerciais baseadas em assinaturas recorrentes (como as modalidades Platinum e Diamond de plataformas online), o chessD executa 100% das suas rotinas de validação de regras FIDE, geração de lances, busca minimax, árvores de abertura, repetição espaçada e cálculo de precisão algorítmica diretamente no dispositivo do usuário, sem emitir telemetria nem demandar conexão com a internet.
 
 A infraestrutura foi construída combinando a expressividade e fluidez gráfica do Flutter (renderização a 120 FPS com suporte a gestos e temas de alto contraste) com a segurança de memória, determinismo e velocidade do Rust compilado para código nativo de máquina via Foreign Function Interface (FFI).
 
 ---
 
-## 2. Comparativo de Recursos: Chess Democrático vs. Plataformas Comerciais
+## 2. Comparativo de Recursos: chessD vs. Plataformas Comerciais
 
-| Funcionalidade | Plataformas Comerciais (Plano Gratuito) | Plataformas Comerciais (Diamond / \$120+/ano) | Chess Democrático (100% Gratuito e Livre) |
+| Funcionalidade | Plataformas Comerciais (Plano Gratuito) | Plataformas Comerciais (Diamond / \$120+/ano) | chessD (100% Gratuito e Livre) |
 | :--- | :--- | :--- | :--- |
 | Revisão de Partidas com Precisão CAPS2 | 1 análise por dia ou paywall | Ilimitada via nuvem proprietária | Ilimitada e Instantânea no dispositivo (Rust Core) |
 | Classificação de Lances (Brilhante, Melhor, Erro) | Oculta ou restrita | Exibida após processamento em servidor | Processamento local em milissegundos |
@@ -187,6 +187,32 @@ $$EF' = \max\left(1.3, \; EF + (0.1 - (5 - q) \cdot (0.08 + (5 - q) \cdot 0.02))
 ### 4.18 Servidor Local Wi-Fi Cast
 - Servidor HTTP e WebSocket embarcado na aplicação (`HttpServer.bind`), permitindo transmitir em tempo real o tabuleiro em HTML5 Canvas para qualquer navegador na rede local (Smart TVs, computadores ou projetores), sem necessidade de acesso à internet externa.
 
+### 4.19 Sistema de Personalização Visual e Paletas de Cores
+- **Modos de Tema da Interface:**
+  - **Modo Noite Padrão (Dark Mode):** Superfícies em cinza carvão profundo (`#12161A` e `#1A222D`), texto de alto contraste e bordas sutis para longas sessões de estudo sem fadiga ocular.
+  - **Modo Claro Padrão (Light Mode):** Superfícies claras e arejadas (`#F8FAFC` e `#FFFFFF`), tipografia nítida e contraste otimizado para ambientes externos ou iluminados.
+- **8 Paletas Canônicas de Cores para o Tabuleiro:**
+  1. **Torneio Verde:** Padrão clássico internacional FIDE (`#769656` nas casas escuras e `#EEEED2` nas casas claras).
+  2. **Madeira Nobre:** Textura visual de carvalho suave e nogueira escura (`#B58863` / `#F0D9B5`).
+  3. **Oceano Meia-Noite:** Tons navais profundos com gelo suave (`#34495E` / `#A9CCE3`).
+  4. **Ametista Real:** Púrpura nobre combinada com lavanda aveludada (`#6C3483` / `#D7BDE2`).
+  5. **Coral Pôr do Sol:** Terracota crepuscular e areia suave (`#BA4A00` / `#EDBB99`).
+  6. **Cyber Onyx:** Estilo sci-fi minimalista com grafite e platina (`#2C3E50` / `#BDC3C7`).
+  7. **Menta Pastel:** Verde sálvia contemporâneo e baunilha suave (`#48C9B0` / `#D1F2EB`).
+  8. **Monocromático:** Estilo industrial de alto contraste com carvão fosco e branco neve (`#212121` / `#FAFAFA`).
+- **5 Estilos de Cores para Peças:**
+  1. **Staunton Clássico:** Peças brancas em marfim natural e negras em ébano/preto fosco.
+  2. **Dourado e Prata:** Peças brancas com acabamento metálico em ouro nobre (`#F1C40F`) e negras em prata polida (`#BDC3C7`).
+  3. **Cyber Neon:** Peças brancas em ciano elétrico luminescente (`#00F2FE`) e negras em magenta neon pulsante (`#FF007F`).
+  4. **Marfim e Ébano Tradicional:** Marfim quente e madeira escura envelhecida.
+  5. **Esmeralda e Ônix:** Brancas em verde esmeralda translúcido (`#2ECC71`) e negras em ônix profundo (`#1B2631`).
+- **6 Cores de Destaque da Interface (Accent Swatches):**
+  - Ciano Elétrico (`#00E5FF`), Verde Esmeralda (`#00E676`), Âmbar Dourado (`#FFD600`), Violeta Real (`#7C4DFF`), Carmesim (`#FF1744`) e Azul Royal (`#2979FF`).
+- **Arquitetura Reativa de Temas:**
+  - Implementado através do singleton central `ThemeController.instance` baseado em `ChangeNotifier`.
+  - Propagação instantânea e atômica para todos os widgets sem necessidade de reinicializar a árvore de visualização ou recarregar rotas.
+  - Tela de personalização visual com tabuleiro interativo em tempo real (*Live Preview*) permitindo testar lances e avaliar harmonização de paletas antes da aplicação global.
+
 ---
 
 ## 5. Garantia de Qualidade e Cobertura de Testes
@@ -200,10 +226,10 @@ O projeto adota uma política de tolerância zero a falhas silenciosas (*silent 
 | Suite de Testes            | Testes Executados | Status     |
 +----------------------------+-------------------+------------+
 | Rust Core Unit & Property  | 31                | 31 Aprovados|
-| Flutter Integration & UI   | 34                | 34 Aprovados|
-| TOTAL                      | 65                | 65 Aprovados|
+| Flutter Integration & UI   | 40                | 40 Aprovados|
+| TOTAL                      | 71                | 71 Aprovados|
 +----------------------------+-------------------+------------+
-Tempo total de execucao dos 65 testes: < 9 segundos.
+Tempo total de execucao dos 71 testes: < 9 segundos.
 ```
 
 Principais cenários cobertos:
@@ -214,36 +240,40 @@ Principais cenários cobertos:
 - Resistência a ciclos infinitos e estabilidade do fator de facilidade no algoritmo SM-2.
 - Verificação de não repetição de oponentes e alocação correta de *Bye* no Sistema Suíço.
 - Detecção de anomalias estatísticas pelo modelo de auditoria Ken Regan.
-- Renderização limpa de todas as 15 telas do app em resoluções mobile e desktop.
+- Alternância dinâmica entre Modo Claro e Modo Noite e integridade reativa do `ThemeController`.
+- Validação das 8 paletas de tabuleiro, 5 estilos de peças e 6 acentos cromáticos sem overflow visual.
+- Renderização limpa de todas as 16 telas e recursos do hub em resoluções mobile e desktop.
 
 ---
 
 ## 6. Estrutura do Repositório
 
 ```
-chess-app/
+chessD/
 |-- .github/
 |   `-- workflows/
 |       `-- build-and-release.yml   # CI/CD automatizado para Windows e Android
 |-- android/                        # Projeto Android nativo configurado
 |-- lib/
-|   |-- main.dart                   # Hub principal com todos os 15 modos
+|   |-- main.dart                   # Hub principal com todos os 16 recursos e modos
 |   |-- services/
 |   |   |-- chess_rust_ffi.dart     # Conector C-ABI FFI de baixo overhead
 |   |   `-- wifi_cast_server.dart   # Servidor HTTP local de espelhamento
 |   `-- ui/
+|       |-- core/
+|       |   `-- chess_theme.dart    # ThemeController, 8 paletas de tabuleiro, 5 de pecas, 6 acentos
 |       |-- features/
 |       |   |-- analysis/           # Telas de Revisao CAPS2 e Auditoria Anti-Cheat
-|       |   |-- board/              # Widget de Tabuleiro e Notacao
+|       |   |-- board/              # Widget de Tabuleiro reativo com preview e Notacao
 |       |   |-- game/               # Modos Pass&Play, Batalha com Bots e Studio
 |       |   |-- learning/           # Trilha Gamificada Duolingo
-|       |   |-- openings/           # Explorador Canônico de Aberturas ECO
+|       |   |-- openings/           # Explorador Canonico de Aberturas ECO
 |       |   |-- puzzles/            # Puzzles Infinitos e Puzzle Ladder
 |       |   |-- repertoire/         # Treinador de Repertorio SuperMemo SM-2
-|       |   |-- settings/           # Gerenciador de Acervo Offline e Cast
+|       |   |-- settings/           # Gerenciador de Acervo, Cast e Customizacao Visual
 |       |   |-- tournament/         # Gerenciador de Torneio Suico FIDE
 |       |   `-- training/           # Repeticao de Erros e Treino de Coordenadas
-|       `-- theme/                  # Paleta Dark Glass responsiva
+|       `-- theme/                  # Tokens visuais Dark Glass e Light responsivos
 |-- rust_core/                      # Nucleo de Alta Performance em Rust
 |   |-- Cargo.toml                  # Configuracao de dependencias Rust
 |   `-- src/
@@ -263,7 +293,7 @@ chess-app/
 |-- scripts/
 |   |-- build_windows.ps1           # Script PowerShell para compilacao Windows
 |   `-- build_android.ps1           # Script PowerShell para compilacao Android
-|-- test/                           # Bateria de testes automatizados Flutter
+|-- test/                           # Bateria de testes automatizados Flutter (40 testes)
 `-- README.md                       # Documentacao tecnica integral
 ```
 
@@ -305,10 +335,10 @@ cargo ndk -t x86_64 -o ../android/app/src/main/jniLibs build --release
 ### 7.3 Execução da Bateria de Testes
 
 ```powershell
-# Testes do Motor Rust
+# Testes do Motor Rust (31 testes aprovados)
 cargo test --manifest-path rust_core/Cargo.toml
 
-# Testes de Interface e Integracao Flutter
+# Testes de Interface, Temas e Integracao Flutter (40 testes aprovados)
 flutter test
 ```
 
@@ -326,11 +356,11 @@ flutter build windows --release
 Copy-Item "rust_core\target\release\rust_core.dll" -Destination "build\windows\x64\runner\Release\rust_core.dll" -Force
 
 # 3. Compactar para distribuicao portatil
-Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "build\soberano-chess-v1.0.0-windows-x64.zip" -Force
+Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "build\chessD-v1.0.1-windows-x64.zip" -Force
 ```
 
 O executável estará pronto para uso imediato em:
-`build/windows/x64/runner/Release/soberano_chess.exe`
+`build/windows/x64/runner/Release/chessD.exe`
 
 ---
 
@@ -347,31 +377,57 @@ O arquivo gerado estará localizado em:
 
 ---
 
-## 8. Notas de Lançamento da Primeira Versão (Release v1.0.0)
+## 8. Notas de Lançamento (Releases)
 
-### 8.1 Destaques do Lançamento
-- **Lançamento Inicial Canônico (v1.0.0):** Implementação completa de todas as 7 fases planejadas no plano mestre do projeto.
-- **Autonomia Absoluta:** Motor Bitboard 100% nativo em Rust eliminando qualquer necessidade de assinatura ou infraestrutura de terceiros.
-- **Recursos Exclusivos:** Inclusão de recursos habitualmente bloqueados sob paywalls em outras plataformas, incluindo Análise CAPS2, Detector de Tilt Emocional, Treinador de Repertório SM-2, Sistema Suíço FIDE com tiebreaks e Perícia Anti-Cheat Ken Regan.
+### 8.1 Release v1.0.1 - Personalização Visual Completa e Atualização de Marca
 
-### 8.2 Artefatos Disponíveis e Somas de Verificação
+#### Destaques da Versão v1.0.1:
+- **Atualização Canônica de Marca:** Transição definitiva do nome do projeto e repositório para **chessD**.
+- **Sistema Completo de Personalização Visual:**
+  - Alternância instantânea entre Modo Claro e Modo Noite padrão (`AppThemeMode`).
+  - 8 paletas exclusivas de cores para o tabuleiro de xadrez (Torneio Verde, Madeira Nobre, Oceano Meia-Noite, Ametista Real, Coral Pôr do Sol, Cyber Onyx, Menta Pastel e Monocromático).
+  - 5 conjuntos estilizados de cores para as peças com acabamentos contrastantes (Staunton Clássico, Dourado e Prata, Cyber Neon, Marfim e Ébano, Esmeralda e Ônix).
+  - 6 cores de acento de interface (Ciano, Esmeralda, Âmbar, Violeta, Carmesim e Azul Royal).
+  - Tabuleiro interativo de visualização em tempo real (*Live Preview*) na tela de configurações visuais.
+  - Arquitetura de reatividade unificada via `ThemeController.instance` com atualização instantânea de todos os componentes da UI sem recarga de rota.
+- **Expansão da Bateria de Testes:** Total de 71 testes automatizados (31 testes de núcleo Rust e 40 testes Flutter), com cobertura integral para a tela de customização visual e verificação de integridade de temas.
+
+#### Artefatos Disponíveis e Somas de Verificação (v1.0.1):
 
 | Artefato | Plataforma | Descrição | SHA-256 |
 | :--- | :--- | :--- | :--- |
-| `chess-democratico-v1.0.0-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `soberano_chess.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `EF64DE7DEE88BB5CDCC361F626629F6F51B3149CEB01C3FA2DE32913C04DBDCA` |
-| `chess-democratico-v1.0.0-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (com bibliotecas nativas arm64-v8a, armeabi-v7a e x86_64) | `1B486AE96174625D214F29E9171DD271B076140F826E074CBCF63F7206770A1C` |
+| `chessD-v1.0.1-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `8405862356B973EF37DC2F30E3E37C7215B17764498C663BD4EC0E949505E75E` |
+| `chessD-v1.0.1-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | *Em compilação via GitHub Actions CI/CD* |
+
+---
+
+### 8.2 Release v1.0.0 - Lançamento Inicial Canônico
+
+#### Destaques da Versão v1.0.0:
+- Implementação inicial completa de todas as 7 fases do plano mestre do motor de xadrez.
+- Motor Bitboard FIDE 100% nativo em Rust eliminando qualquer necessidade de servidor externo.
+- Revisão de partidas com precisão CAPS2, Detector de Tilt, Treinador SM-2, Sistema Suíço FIDE e Auditoria Anti-Cheat Ken Regan.
+
+#### Artefatos Históricos (v1.0.0):
+
+| Artefato | Plataforma | Descrição | SHA-256 |
+| :--- | :--- | :--- | :--- |
+| `chess-democratico-v1.0.0-windows-x64.zip` | Windows 64-bit | Pacote portátil v1.0.0 inicial | `EF64DE7DEE88BB5CDCC361F626629F6F51B3149CEB01C3FA2DE32913C04DBDCA` |
+| `chess-democratico-v1.0.0-android.apk` | Android 8.0+ | Pacote de instalação APK v1.0.0 inicial | `1B486AE96174625D214F29E9171DD271B076140F826E074CBCF63F7206770A1C` |
+
+---
 
 ### 8.3 Instruções de Instalação e Execução
 
 #### No Windows:
-1. Extraia o conteúdo de `chess-democratico-v1.0.0-windows-x64.zip` em uma pasta de sua preferência.
-2. Certifique-se de que o arquivo `rust_core.dll` permaneça na mesma pasta do executável `soberano_chess.exe`.
-3. Dê um duplo clique em `soberano_chess.exe` para iniciar o aplicativo. Não é necessária nenhuma instalação adicional.
+1. Extraia o conteúdo de `chessD-v1.0.1-windows-x64.zip` em uma pasta de sua preferência.
+2. Certifique-se de que o arquivo `rust_core.dll` permaneça na mesma pasta do executável `chessD.exe`.
+3. Dê um duplo clique em `chessD.exe` para iniciar o aplicativo. Não é necessária nenhuma instalação adicional.
 
 #### No Android:
-1. Transfira o arquivo `chess-democratico-v1.0.0-android.apk` para o armazenamento do seu smartphone ou faça o download diretamente pelo navegador do aparelho.
+1. Transfira o arquivo `chessD-v1.0.1-android.apk` para o armazenamento do seu smartphone ou faça o download diretamente pelo navegador do aparelho.
 2. Abra o arquivo no gerenciador de arquivos do Android e permita a instalação a partir da fonte selecionada, se solicitado pelo sistema operacional.
-3. Conclua a instalação e abra o aplicativo Chess Democrático. O aplicativo opera integralmente em modo offline desde a primeira inicialização.
+3. Conclua a instalação e abra o aplicativo chessD. O aplicativo opera integralmente em modo offline desde a primeira inicialização.
 
 ---
 

@@ -176,127 +176,141 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final fen = currentStatus?['fen'] as String? ?? '';
-    final boardMap = _parseBoardPieces(fen);
+    return AnimatedBuilder(
+      animation: ThemeController.instance,
+      builder: (context, _) {
+        final fen = currentStatus?['fen'] as String? ?? '';
+        final boardMap = _parseBoardPieces(fen);
+        final lightColor = (widget.theme != ChessTheme.tournamentGreen)
+            ? widget.theme.lightSquareColor
+            : ThemeController.instance.lightSquareColor;
+        final darkColor = (widget.theme != ChessTheme.tournamentGreen)
+            ? widget.theme.darkSquareColor
+            : ThemeController.instance.darkSquareColor;
+        final accent = ThemeController.instance.accentColor;
 
-    return AspectRatio(
-      aspectRatio: 1.0,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Column(
-            children: List.generate(8, (rowIdx) {
-              final rank = widget.isFlipped ? rowIdx + 1 : 8 - rowIdx;
-
-              return Expanded(
-                child: Row(
-                  children: List.generate(8, (colIdx) {
-                    final fileNum = widget.isFlipped ? 7 - colIdx : colIdx;
-                    final file = String.fromCharCode('a'.codeUnitAt(0) + fileNum);
-                    final square = '$file$rank';
-
-                    final isLight = (fileNum + rank) % 2 != 0;
-                    final squareBaseColor = isLight ? widget.theme.lightSquareColor : widget.theme.darkSquareColor;
-
-                    final isSelected = selectedSquare == square;
-                    final isLegalTarget = legalTargets.contains(square);
-                    final isLastMove = lastFromSquare == square || lastToSquare == square;
-
-                    // Dados do Heatmap
-                    dynamic squareHeatmap;
-                    if (heatmapData != null) {
-                      squareHeatmap = heatmapData!.firstWhere(
-                        (h) => h['square'] == square,
-                        orElse: () => null,
-                      );
-                    }
-
-                    Color squareColor = squareBaseColor;
-                    if (isLastMove) {
-                      squareColor = Color.alphaBlend(AppColors.squareLastMove, squareColor);
-                    }
-                    if (isSelected) {
-                      squareColor = Color.alphaBlend(AppColors.squareSelected, squareColor);
-                    }
-
-                    // Sobreposição de Heatmap
-                    if (squareHeatmap != null) {
-                      final dom = squareHeatmap['dominance'] as int? ?? 0;
-                      if (dom > 0) {
-                        squareColor = Color.alphaBlend(Colors.blue.withOpacity((dom * 0.12).clamp(0.1, 0.45)), squareColor);
-                      } else if (dom < 0) {
-                        squareColor = Color.alphaBlend(Colors.red.withOpacity((dom.abs() * 0.12).clamp(0.1, 0.45)), squareColor);
-                      }
-                      if (squareHeatmap['is_undefended'] == true) {
-                        squareColor = Color.alphaBlend(Colors.amber.withOpacity(0.35), squareColor);
-                      }
-                    }
-
-                    final pieceChar = boardMap[square];
-
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () => _onSquareTapped(square),
-                        child: Container(
-                          color: squareColor,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // Peça de Xadrez (respeita modo blindfold)
-                              if (pieceChar != null && !widget.isBlindfold)
-                                Text(
-                                  _getPieceSymbol(pieceChar),
-                                  style: TextStyle(
-                                    fontSize: 34,
-                                    height: 1.0,
-                                    color: pieceChar.toUpperCase() == pieceChar
-                                        ? Colors.white
-                                        : Colors.black.withOpacity(0.9),
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black.withOpacity(0.4),
-                                        blurRadius: 4,
-                                        offset: const Offset(1, 1),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                              // Indicador de Lance Legal (Ponto suave ou Anel de captura)
-                              if (isLegalTarget)
-                                Container(
-                                  width: pieceChar != null ? 36 : 14,
-                                  height: pieceChar != null ? 36 : 14,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: pieceChar != null ? Colors.transparent : AppColors.primaryCyan.withOpacity(0.75),
-                                    border: pieceChar != null
-                                        ? Border.all(color: AppColors.primaryCyan, width: 3.5)
-                                        : null,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
+        return AspectRatio(
+          aspectRatio: 1.0,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
                 ),
-              );
-            }),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Column(
+                children: List.generate(8, (rowIdx) {
+                  final rank = widget.isFlipped ? rowIdx + 1 : 8 - rowIdx;
+
+                  return Expanded(
+                    child: Row(
+                      children: List.generate(8, (colIdx) {
+                        final fileNum = widget.isFlipped ? 7 - colIdx : colIdx;
+                        final file = String.fromCharCode('a'.codeUnitAt(0) + fileNum);
+                        final square = '$file$rank';
+
+                        final isLight = (fileNum + rank) % 2 != 0;
+                        final squareBaseColor = isLight ? lightColor : darkColor;
+
+                        final isSelected = selectedSquare == square;
+                        final isLegalTarget = legalTargets.contains(square);
+                        final isLastMove = lastFromSquare == square || lastToSquare == square;
+
+                        // Dados do Heatmap
+                        dynamic squareHeatmap;
+                        if (heatmapData != null) {
+                          squareHeatmap = heatmapData!.firstWhere(
+                            (h) => h['square'] == square,
+                            orElse: () => null,
+                          );
+                        }
+
+                        Color squareColor = squareBaseColor;
+                        if (isLastMove) {
+                          squareColor = Color.alphaBlend(AppColors.squareLastMove, squareColor);
+                        }
+                        if (isSelected) {
+                          squareColor = Color.alphaBlend(accent.withOpacity(0.55), squareColor);
+                        }
+
+                        // Sobreposição de Heatmap
+                        if (squareHeatmap != null) {
+                          final dom = squareHeatmap['dominance'] as int? ?? 0;
+                          if (dom > 0) {
+                            squareColor = Color.alphaBlend(Colors.blue.withOpacity((dom * 0.12).clamp(0.1, 0.45)), squareColor);
+                          } else if (dom < 0) {
+                            squareColor = Color.alphaBlend(Colors.red.withOpacity((dom.abs() * 0.12).clamp(0.1, 0.45)), squareColor);
+                          }
+                          if (squareHeatmap['is_undefended'] == true) {
+                            squareColor = Color.alphaBlend(Colors.amber.withOpacity(0.35), squareColor);
+                          }
+                        }
+
+                        final pieceChar = boardMap[square];
+                        final isWhitePiece = pieceChar != null && pieceChar.toUpperCase() == pieceChar;
+                        final pieceColor = isWhitePiece
+                            ? ThemeController.instance.whitePieceColor
+                            : ThemeController.instance.blackPieceColor;
+
+                        return Expanded(
+                          child: GestureDetector(
+                            onTap: () => _onSquareTapped(square),
+                            child: Container(
+                              color: squareColor,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Peça de Xadrez (respeita modo blindfold e paleta customizada)
+                                  if (pieceChar != null && !widget.isBlindfold)
+                                    Text(
+                                      _getPieceSymbol(pieceChar),
+                                      style: TextStyle(
+                                        fontSize: 34,
+                                        height: 1.0,
+                                        color: pieceColor,
+                                        shadows: [
+                                          Shadow(
+                                            color: isWhitePiece ? Colors.black.withOpacity(0.6) : Colors.white.withOpacity(0.25),
+                                            blurRadius: 4,
+                                            offset: const Offset(1, 1),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                  // Indicador de Lance Legal (Ponto suave ou Anel de captura)
+                                  if (isLegalTarget)
+                                    Container(
+                                      width: pieceChar != null ? 36 : 14,
+                                      height: pieceChar != null ? 36 : 14,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: pieceChar != null ? Colors.transparent : accent.withOpacity(0.75),
+                                        border: pieceChar != null
+                                            ? Border.all(color: accent, width: 3.5)
+                                            : null,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  );
+                }),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

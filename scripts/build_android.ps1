@@ -1,4 +1,4 @@
-# Script de compilacao para Android do Soberano Chess
+# Script de compilacao para Android do chessD
 $ErrorActionPreference = "Stop"
 
 if (-not (Get-Command cargo-ndk -ErrorAction SilentlyContinue)) {

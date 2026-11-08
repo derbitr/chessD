@@ -18,6 +18,7 @@ import 'package:soberano_chess/ui/features/openings/opening_explorer_screen.dart
 import 'package:soberano_chess/ui/features/repertoire/repertoire_trainer_screen.dart';
 import 'package:soberano_chess/ui/features/tournament/tournament_manager_screen.dart';
 import 'package:soberano_chess/ui/features/settings/offline_packs_screen.dart';
+import 'package:soberano_chess/ui/features/settings/theme_customization_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,11 +30,16 @@ class SoberanoChessApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Chess Democrático',
-      debugShowCheckedModeBanner: false,
-      theme: ChessTheme.tournamentGreen.toThemeData(),
-      home: const MainHubScreen(),
+    return AnimatedBuilder(
+      animation: ThemeController.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'chessD',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeController.instance.toThemeData(),
+          home: const MainHubScreen(),
+        );
+      },
     );
   }
 }
@@ -90,15 +96,24 @@ class _MainHubScreenState extends State<MainHubScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Icon(Icons.shield, color: AppColors.primaryCyan, size: 24),
+            Icon(Icons.shield, color: ThemeController.instance.accentColor, size: 24),
             const SizedBox(width: 8),
             Text(
-              'CHESS DEMOCRÁTICO',
+              'chessD',
               style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.5),
             ),
           ],
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.palette_outlined, color: ThemeController.instance.accentColor),
+            tooltip: 'Personalização Visual',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ThemeCustomizationScreen()),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
@@ -455,6 +470,25 @@ class _MainHubScreenState extends State<MainHubScreen> {
                 );
               },
             ),
+
+            const SizedBox(height: 24),
+            const Text('APARÊNCIA & PERSONALIZAÇÃO VISUAL', style: AppTypography.labelSmall),
+            const SizedBox(height: 12),
+
+            // Card 16: Personalização Visual
+            _buildModeCard(
+              title: 'Personalização Visual & Paletas',
+              subtitle: 'Alterne entre Modo Claro e Noite, escolha entre 8 paletas de tabuleiro, 5 estilos de peças e cores de acento.',
+              icon: Icons.palette,
+              accentColor: ThemeController.instance.accentColor,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ThemeCustomizationScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -474,9 +508,9 @@ class _MainHubScreenState extends State<MainHubScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: ThemeController.instance.surfaceColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.surfaceElevated),
+          border: Border.all(color: ThemeController.instance.borderColor),
         ),
         child: Row(
           children: [
@@ -494,9 +528,9 @@ class _MainHubScreenState extends State<MainHubScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppTypography.titleMedium),
+                  Text(title, style: AppTypography.titleMedium.copyWith(color: ThemeController.instance.textPrimary)),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: AppTypography.bodyMedium),
+                  Text(subtitle, style: AppTypography.bodyMedium.copyWith(color: ThemeController.instance.textSecondary)),
                 ],
               ),
             ),
