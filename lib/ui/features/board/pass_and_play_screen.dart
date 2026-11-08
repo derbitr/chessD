@@ -4,18 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_theme.dart';
 import 'chess_board_widget.dart';
 
 class PassAndPlayScreen extends StatefulWidget {
   final ChessRustFfi ffi;
   final int initialMinutes;
   final int incrementSeconds;
+  final String? whitePlayerName;
+  final String? blackPlayerName;
+  final Function(String result)? onGameConcluded;
 
   const PassAndPlayScreen({
     super.key,
     required this.ffi,
     this.initialMinutes = 5,
     this.incrementSeconds = 3,
+    this.whitePlayerName,
+    this.blackPlayerName,
+    this.onGameConcluded,
   });
 
   @override
@@ -31,6 +38,7 @@ class _PassAndPlayScreenState extends State<PassAndPlayScreen> {
   String currentTurn = 'white';
   bool isGameOver = false;
   String? outcomeText;
+  String? finalResult;
   bool showHeatmap = false;
 
   @override
@@ -74,11 +82,14 @@ class _PassAndPlayScreenState extends State<PassAndPlayScreen> {
 
   void _onTimeout(String winner) {
     _clockTimer?.cancel();
+    final res = winner == 'Brancas' ? '1-0' : '0-1';
     setState(() {
       isClockRunning = false;
       isGameOver = true;
-      outcomeText = 'Tempo esgotado! Vitória das $winner';
+      finalResult = res;
+      outcomeText = 'Tempo esgotado! Vitória das $winner ($res)';
     });
+    widget.onGameConcluded?.call(res);
   }
 
   void _onMovePlayed(String uci) {
@@ -102,7 +113,15 @@ class _PassAndPlayScreenState extends State<PassAndPlayScreen> {
         isClockRunning = false;
         final reason = status['termination_reason'] ?? '';
         final outcome = status['outcome'] ?? '';
-        outcomeText = 'Fim de Jogo ($outcome): $reason';
+        String res = '1/2-1/2';
+        if (outcome == 'WhiteWins') {
+          res = '1-0';
+        } else if (outcome == 'BlackWins') {
+          res = '0-1';
+        }
+        finalResult = res;
+        outcomeText = 'Fim de Jogo ($res): $reason';
+        widget.onGameConcluded?.call(res);
       }
     });
   }
@@ -116,113 +135,142 @@ class _PassAndPlayScreenState extends State<PassAndPlayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Pass & Play (2 Jogadores)', style: AppTypography.titleLarge),
-        backgroundColor: AppColors.surface,
-        actions: [
-          IconButton(
-            icon: Icon(
-              showHeatmap ? Icons.local_fire_department : Icons.local_fire_department_outlined,
-              color: showHeatmap ? Colors.orange : Colors.white70,
+    return AnimatedBuilder(
+      animation: ThemeController.instance,
+      builder: (context, _) {
+        final theme = ThemeController.instance;
+        final wName = widget.whitePlayerName ?? 'JOGADOR BRANCO';
+        final bName = widget.blackPlayerName ?? 'JOGADOR PRETO';
+
+        return Scaffold(
+          backgroundColor: theme.scaffoldBackground,
+          appBar: AppBar(
+            title: Text(
+              widget.whitePlayerName != null
+                  ? '$wName vs $bName'
+                  : 'Pass & Play (2 Jogadores)',
+              style: AppTypography.titleLarge.copyWith(color: theme.textPrimary),
             ),
-            tooltip: 'Alternar Mapa de Calor',
-            onPressed: () {
-              setState(() {
-                showHeatmap = !showHeatmap;
-              });
-            },
+            backgroundColor: theme.surfaceColor,
+            iconTheme: IconThemeData(color: theme.textPrimary),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  showHeatmap ? Icons.local_fire_department : Icons.local_fire_department_outlined,
+                  color: showHeatmap ? Colors.orange : theme.textSecondary,
+                ),
+                tooltip: 'Alternar Mapa de Calor',
+                onPressed: () {
+                  setState(() {
+                    showHeatmap = !showHeatmap;
+                  });
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Relógio das Pretas (Invertido para o jogador do topo)
-            Expanded(
-              flex: 1,
-              child: RotatedBox(
-                quarterTurns: 2,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: currentTurn == 'black' ? AppColors.surfaceElevated : AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: currentTurn == 'black' ? AppColors.primaryCyan : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('JOGADOR PRETO', style: AppTypography.titleMedium),
-                      Text(
-                        _formatClock(blackTimeMillis),
-                        style: AppTypography.displayLarge.copyWith(
-                          color: blackTimeMillis < 10000 ? AppColors.moveBlunder : AppColors.textPrimary,
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Relógio das Pretas (Invertido para o jogador do topo)
+                Expanded(
+                  flex: 1,
+                  child: RotatedBox(
+                    quarterTurns: 2,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: currentTurn == 'black' ? theme.surfaceElevatedColor : theme.surfaceColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: currentTurn == 'black' ? theme.accentColor : theme.borderColor,
+                          width: 2,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Tabuleiro Central
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: ChessBoardWidget(
-                ffi: widget.ffi,
-                game: _game,
-                showHeatmap: showHeatmap,
-                onMovePlayed: _onMovePlayed,
-              ),
-            ),
-
-            if (outcomeText != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  outcomeText!,
-                  style: AppTypography.titleLarge.copyWith(color: AppColors.secondaryAmber),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-
-            // Relógio das Brancas (Jogador de baixo)
-            Expanded(
-              flex: 1,
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: currentTurn == 'white' ? AppColors.surfaceElevated : AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: currentTurn == 'white' ? AppColors.primaryCyan : Colors.transparent,
-                    width: 2,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('JOGADOR BRANCO', style: AppTypography.titleMedium),
-                    Text(
-                      _formatClock(whiteTimeMillis),
-                      style: AppTypography.displayLarge.copyWith(
-                        color: whiteTimeMillis < 10000 ? AppColors.moveBlunder : AppColors.textPrimary,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(bName.toUpperCase(), style: AppTypography.titleMedium.copyWith(color: theme.textPrimary)),
+                          Text(
+                            _formatClock(blackTimeMillis),
+                            style: AppTypography.displayLarge.copyWith(
+                              color: blackTimeMillis < 10000 ? AppColors.moveBlunder : theme.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+
+                // Tabuleiro Central
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: ChessBoardWidget(
+                    ffi: widget.ffi,
+                    game: _game,
+                    showHeatmap: showHeatmap,
+                    onMovePlayed: _onMovePlayed,
+                  ),
+                ),
+
+                if (outcomeText != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      outcomeText!,
+                      style: AppTypography.titleLarge.copyWith(color: theme.accentColor),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  if (finalResult != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: ElevatedButton.icon(
+                        onPressed: () => Navigator.of(context).pop(finalResult),
+                        icon: const Icon(Icons.check_circle_outline, color: Colors.black),
+                        label: Text(
+                          'Salvar Resultado ($finalResult)',
+                          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: theme.accentColor),
+                      ),
+                    ),
+                ],
+
+                // Relógio das Brancas (Jogador de baixo)
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: currentTurn == 'white' ? theme.surfaceElevatedColor : theme.surfaceColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: currentTurn == 'white' ? theme.accentColor : theme.borderColor,
+                        width: 2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(wName.toUpperCase(), style: AppTypography.titleMedium.copyWith(color: theme.textPrimary)),
+                        Text(
+                          _formatClock(whiteTimeMillis),
+                          style: AppTypography.displayLarge.copyWith(
+                            color: whiteTimeMillis < 10000 ? AppColors.moveBlunder : theme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

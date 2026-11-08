@@ -93,6 +93,18 @@ void main() {
       expect(pairings.length, equals(2));
     });
 
+    test('FFI calcula desempates Buchholz e Sonneborn-Berger corretamente', () {
+      final players = [
+        {'id': 'p1', 'name': 'Magnus', 'rating': 2850, 'score': 1.0, 'buchholz': 0.0, 'sonneborn_berger': 0.0, 'opponents_played': ['p2'], 'color_history': ['W'], 'had_bye': false},
+        {'id': 'p2', 'name': 'Hikaru', 'rating': 2800, 'score': 0.5, 'buchholz': 0.0, 'sonneborn_berger': 0.0, 'opponents_played': ['p1'], 'color_history': ['B'], 'had_bye': false},
+      ];
+
+      final updated = ffi.calculateTiebreaks(players);
+      expect(updated.length, equals(2));
+      expect(updated[0]['buchholz'], equals(0.5));
+      expect(updated[1]['buchholz'], equals(1.0));
+    });
+
     testWidgets('TournamentManagerScreen renderiza tabela de classificação e botão de emparceirar', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
@@ -108,6 +120,14 @@ void main() {
       expect(find.text('Torneios (Sistema Suíço FIDE)'), findsOneWidget);
       expect(find.text('CLASSIFICAÇÃO GERAL'), findsOneWidget);
       expect(find.text('Magnus'), findsWidgets);
+
+      // Clica em EMPARCEIRAR para gerar a Rodada 1
+      await tester.tap(find.text('EMPARCEIRAR'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('RODADA 1'), findsOneWidget);
+      expect(find.text('Tabuleiro Local'), findsWidgets);
+      expect(find.text('Online P2P'), findsWidgets);
     });
   });
 

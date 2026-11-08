@@ -70,6 +70,9 @@ typedef ChessOpeningsLookupEcoDart = Pointer<Utf8> Function(Pointer<Utf8> eco);
 typedef ChessSwissGeneratePairingsC = Pointer<Utf8> Function(Pointer<Utf8> playersJson);
 typedef ChessSwissGeneratePairingsDart = Pointer<Utf8> Function(Pointer<Utf8> playersJson);
 
+typedef ChessSwissCalculateTiebreaksC = Pointer<Utf8> Function(Pointer<Utf8> playersJson);
+typedef ChessSwissCalculateTiebreaksDart = Pointer<Utf8> Function(Pointer<Utf8> playersJson);
+
 typedef ChessAntiCheatAuditC = Pointer<Utf8> Function(
   Pointer<Utf8> movesJson,
   Pointer<Utf8> top1Json,
@@ -147,6 +150,7 @@ class ChessRustFfi {
   late final ChessOpeningsCatalogJsonDart _openingsCatalog;
   late final ChessOpeningsLookupEcoDart _openingsLookupEco;
   late final ChessSwissGeneratePairingsDart _swissPairings;
+  late final ChessSwissCalculateTiebreaksDart _swissCalculateTiebreaks;
   late final ChessAntiCheatAuditDart _antiCheatAudit;
   late final ChessNetworkClockSyncDart _networkClockSync;
   late final ChessNetworkValidateRemoteMoveDart _networkValidateRemoteMove;
@@ -172,6 +176,7 @@ class ChessRustFfi {
     _openingsCatalog = dylib.lookupFunction<ChessOpeningsCatalogJsonC, ChessOpeningsCatalogJsonDart>('chess_openings_catalog_json');
     _openingsLookupEco = dylib.lookupFunction<ChessOpeningsLookupEcoC, ChessOpeningsLookupEcoDart>('chess_openings_lookup_eco');
     _swissPairings = dylib.lookupFunction<ChessSwissGeneratePairingsC, ChessSwissGeneratePairingsDart>('chess_swiss_generate_pairings');
+    _swissCalculateTiebreaks = dylib.lookupFunction<ChessSwissCalculateTiebreaksC, ChessSwissCalculateTiebreaksDart>('chess_swiss_calculate_tiebreaks');
     _antiCheatAudit = dylib.lookupFunction<ChessAntiCheatAuditC, ChessAntiCheatAuditDart>('chess_anti_cheat_audit');
     _networkClockSync = dylib.lookupFunction<ChessNetworkClockSyncC, ChessNetworkClockSyncDart>('chess_network_clock_sync');
     _networkValidateRemoteMove = dylib.lookupFunction<ChessNetworkValidateRemoteMoveC, ChessNetworkValidateRemoteMoveDart>('chess_network_validate_remote_move');
@@ -390,6 +395,25 @@ class ChessRustFfi {
       if (ptr.address == 0) return {};
       try {
         return jsonDecode(ptr.toDartString()) as Map<String, dynamic>;
+      } finally {
+        _freeString(ptr);
+      }
+    } finally {
+      calloc.free(jsonIn);
+    }
+  }
+
+  List<Map<String, dynamic>> calculateTiebreaks(List<Map<String, dynamic>> players) {
+    final jsonIn = jsonEncode(players).toNativeUtf8();
+    try {
+      final ptr = _swissCalculateTiebreaks(jsonIn);
+      if (ptr.address == 0) return players;
+      try {
+        final decoded = jsonDecode(ptr.toDartString());
+        if (decoded is List) {
+          return decoded.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        }
+        return players;
       } finally {
         _freeString(ptr);
       }

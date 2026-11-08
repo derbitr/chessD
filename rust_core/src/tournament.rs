@@ -183,4 +183,19 @@ mod tests {
         let had_bye_count = players.iter().filter(|p| p.had_bye).count();
         assert_eq!(had_bye_count, 1);
     }
+
+    #[test]
+    fn test_swiss_tiebreaks_buchholz() {
+        let mut players = vec![
+            TournamentPlayer::new("p1".into(), "P1".into(), 2000),
+            TournamentPlayer::new("p2".into(), "P2".into(), 1900),
+            TournamentPlayer::new("p3".into(), "P3".into(), 1800),
+        ];
+        players[0].opponents_played = vec!["p2".into(), "p3".into()];
+        players[1].score = 2.0;
+        players[2].score = 1.0;
+
+        SwissTournament::calculate_tiebreaks(&mut players);
+        assert!((players[0].buchholz - 3.0).abs() < 1e-5);
+    }
 }

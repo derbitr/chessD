@@ -321,6 +321,7 @@ pub extern "C" fn chess_swiss_generate_pairings(players_json: *const c_char) -> 
     let s = unsafe { CStr::from_ptr(players_json) }.to_str().unwrap_or_default();
     match serde_json::from_str::<Vec<TournamentPlayer>>(s) {
         Ok(mut players) => {
+            SwissTournament::calculate_tiebreaks(&mut players);
             let pairings = SwissTournament::generate_round_pairings(&mut players);
             #[derive(Serialize)]
             struct SwissResult {
@@ -332,6 +333,25 @@ pub extern "C" fn chess_swiss_generate_pairings(players_json: *const c_char) -> 
                 updated_players: players,
             };
             let json = serde_json::to_string(&res).unwrap_or_default();
+            to_c_string(json)
+        }
+        Err(e) => {
+            let err = format!("{{\"error\":\"{}\"}}", e);
+            to_c_string(err)
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn chess_swiss_calculate_tiebreaks(players_json: *const c_char) -> *mut c_char {
+    if players_json.is_null() {
+        return std::ptr::null_mut();
+    }
+    let s = unsafe { CStr::from_ptr(players_json) }.to_str().unwrap_or_default();
+    match serde_json::from_str::<Vec<TournamentPlayer>>(s) {
+        Ok(mut players) => {
+            SwissTournament::calculate_tiebreaks(&mut players);
+            let json = serde_json::to_string(&players).unwrap_or_default();
             to_c_string(json)
         }
         Err(e) => {
