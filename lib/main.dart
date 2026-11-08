@@ -251,39 +251,6 @@ class _MainHubScreenState extends State<MainHubScreen> {
           ],
         ),
         actions: [
-          // Badges de Status (Streak e XP) no Estilo Chess.com
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.surfaceElevatedColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.local_fire_department, color: Colors.orange, size: 18),
-                const SizedBox(width: 4),
-                Text('0', style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.surfaceElevatedColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.diamond, color: AppColors.primaryCyan, size: 16),
-                const SizedBox(width: 4),
-                Text('100', style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
           IconButton(
             icon: Icon(Icons.palette_outlined, color: theme.accentColor),
             tooltip: 'Personalização Visual',
