@@ -90,20 +90,27 @@ A comunicação entre a camada Dart e a biblioteca nativa Rust (`rust_core.dll` 
 - Relógio integrado com incrementos configuráveis.
 
 ### 4.5 Batalha contra Bots Nativos
-- 8 patamares distintos de dificuldade cobrindo faixas de Elo de 400 a 2400.
+- Calibração analógica contínua e escalonada cobrindo faixas de Elo de 400 a 2400.
+- Profundidade de cálculo adaptativa:
+  - Elo 400 a 800: profundidade 1 (respostas imediatas).
+  - Elo 800 a 1400: profundidade 2 (capturas óbvias e táticas curtas).
+  - Elo 1400 a 2000: profundidade 3 (planejamento posicional e combinações).
+  - Elo 2000+: profundidade 4+ com poda Alfa-Beta e *Quiescence Search* contra efeito horizonte.
+- Taxa de gafe humana estocástica (*Human Blunder Rate*): varia de 50% de imprecisão deliberada em Elo < 600 até 0% absoluto em nível mestre.
+- Diversidade dinâmica de lances (*Move Sampling*): amostragem probabilística entre os melhores lances candidatos para evitar partidas repetitivas ou mecânicas.
 - 3 perfis de personalidade técnica:
   - **Classica:** Busca equilibrada entre solidez posicional e segurança de rei.
-  - **Agressiva:** Ponderação inflacionada para linhas abertas, sacrifícios e lances ofensivos.
-  - **Posicional:** Foco estrito em estrutura de peões, postos avançados e controle do centro.
-- Motor Minimax com poda Alfa-Beta e *Quiescence Search* para mitigar o efeito horizonte.
+  - **Agressiva:** Bônus de avaliação para xeques (+35 cp) e capturas (+25 cp), forçando ataques à ala do rei.
+  - **Posicional:** Ponderação elevada para roque antecipado (+30 cp), estrutura de peões e controle de colunas abertas.
 
 ### 4.6 Bot Studio
-- Estação de customização onde o usuário pode criar e calibrar seus próprios oponentes sintéticos, ajustando parâmetros de profundidade de busca, tolerância a riscos e estilo de jogo.
+- Estação de customização onde o usuário pode criar e calibrar seus próprios oponentes sintéticos sob medida, ajustando nomes, Elo específico e personalidades de jogo.
 
-### 4.7 Fischer Random Chess960
+### 4.7 Fischer Random Chess960 e Posições Arbitrárias (FEN)
 - Geração determinística dos 960 arranjos iniciais oficiais propostos pelo Grande Mestre Bobby Fischer.
-- Garantia de bispos em casas de cores alternadas e rei confinado entre as duas torres.
+- Garantia matemática de bispos em casas de cores alternadas e rei confinado entre as duas torres.
 - Navegação por semente numérica (0 a 959), onde o índice 518 corresponde rigorosamente à posição clássica do xadrez tradicional.
+- **Suporte Nativo a Posições Arbitrárias via FEN:** Função `chess_game_create_from_fen` que permite inicializar o motor com qualquer posição legal de xadrez (finais teóricos como Lucena e Philidor, estudos de mate, *Tabiyas* de meio-jogo e modalidades com vantagem material/*Odds Chess*).
 
 ### 4.8 Mapas de Calor Tático (Bitboard Heatmaps)
 - Mapeamento em tempo real do controle territorial e da tensão de ataque sobre cada casa.
@@ -164,13 +171,19 @@ $$EF' = \max\left(1.3, \; EF + (0.1 - (5 - q) \cdot (0.08 + (5 - q) \cdot 0.02))
   - **E60:** Defesa India do Rei.
 - Exibição de estatísticas consolidadas de vitórias das Brancas, empates e vitórias das Negras em partidas de grandes mestres para cada lance candidato.
 
-### 4.15 Gerenciador de Torneios Sistema Suíço FIDE
-- Módulo de emparceiramento estrito para torneios presenciais:
-  - Ordenação por pontuação acumulada e desempates.
-  - Proibição absoluta de confrontos repetidos entre os mesmos jogadores.
-  - Balanceamento de atribuição de cores (Brancas e Negras).
-  - Gestão automática de *Bye* (1.0 ponto) em rodadas com número ímpar de participantes.
-  - Cálculo oficial dos critérios de desempate Buchholz e Sonneborn-Berger.
+### 4.15 Gerenciador de Torneios Sistema Suíço FIDE & Integração Híbrida
+- Módulo de emparceiramento estrito para competições presenciais e online:
+  - Ordenação oficial da FIDE: 1º Pontuação $\rightarrow$ 2º Buchholz $\rightarrow$ 3º Rating Elo.
+  - Proibição matemática absoluta de confrontos repetidos entre os mesmos jogadores.
+  - Balanceamento rigoroso de atribuição de cores (Brancas e Negras) através do vetor `color_history`.
+  - Gestão automática de *Bye* (1.0 ponto) em rodadas com número ímpar de participantes, com garantia de no máximo um *Bye* por competidor.
+  - **Cálculo de Desempates em Tempo Real:** FFI nativa `chess_swiss_calculate_tiebreaks` que atualiza instantaneamente o índice Buchholz e Sonneborn-Berger a cada resultado registrado.
+  - **Execução Híbrida de Partidas:** Cada confronto gerado na rodada pode ser disputado via:
+    1. **Online P2P:** Sala multiplayer WebRTC direta sem servidor.
+    2. **Tabuleiro Local (Pass & Play):** Tabuleiro interativo no dispositivo com relógio e nomes customizados.
+    3. **Registro Manual:** Inserção direta de placares (`1-0`, `0-1`, `½-½`).
+  - **Inscrição Dinâmica:** Botão de inscrição para cadastrar novos competidores locais ou remotos com nomes e ratings personalizados.
+  - **Conformidade Visual:** Interface integrada ao `ThemeController.instance` com suporte pleno a temas Claro, Escuro e acentos cromáticos.
 
 ### 4.16 Auditoria Forense Estatística Anti-Cheat (Modelo Ken Regan)
 - Ferramenta pericial fundamentada nas formulações do Professor Kenneth Regan (assessor da FIDE):
@@ -240,11 +253,11 @@ O projeto adota uma política de tolerância zero a falhas silenciosas (*silent 
 +-------------------------------------------------------------+
 | Suite de Testes            | Testes Executados | Status     |
 +----------------------------+-------------------+------------+
-| Rust Core Unit & Property  | 37                | 37 Aprovados|
-| Flutter Integration & UI   | 44                | 44 Aprovados|
-| TOTAL                      | 81                | 81 Aprovados|
+| Rust Core Unit & Property  | 38                | 38 Aprovados|
+| Flutter Integration & UI   | 45                | 45 Aprovados|
+| TOTAL                      | 83                | 83 Aprovados|
 +----------------------------+-------------------+------------+
-Tempo total de execucao dos 81 testes: < 12 segundos.
+Tempo total de execucao dos 83 testes: < 12 segundos.
 ```
 
 Principais cenários cobertos:
@@ -253,7 +266,8 @@ Principais cenários cobertos:
 - Validação de promoção com seleção de peça e captura *en passant*.
 - Preservação da regra de bispos em cores opostas e rei entre as torres nas 960 posições Fischer Random.
 - Resistência a ciclos infinitos e estabilidade do fator de facilidade no algoritmo SM-2.
-- Verificação de não repetição de oponentes e alocação correta de *Bye* no Sistema Suíço.
+- Verificação de não repetição de oponentes, alocação correta de *Bye* e cálculo exato de Buchholz no Sistema Suíço.
+- Ciclo de vida de torneios híbridos com emparceiramento, opções de jogo local/online e inscrição dinâmica de competidores.
 - Detecção de anomalias estatísticas pelo modelo de auditoria Ken Regan.
 - Alternância dinâmica entre Modo Claro e Modo Noite e integridade reativa do `ThemeController`.
 - Validação das 8 paletas de tabuleiro, 5 estilos de peças e 6 acentos cromáticos sem overflow visual.
@@ -403,13 +417,15 @@ O arquivo gerado estará localizado em:
 
 ## 8. Notas de Lançamento (Releases)
 
-### 8.1 Release v1.0.2 (Pronto para Lançamento) - Multiplayer Online P2P Custo Zero e Central de Ajuda
+### 8.1 Release v1.0.2 - Multiplayer Online P2P Custo Zero, Central de Ajuda & Integração de Torneios
 
 #### Destaques da Versão v1.0.2:
 - **Multiplayer Online P2P com Custo Zero:** Arquitetura híbrida com canais diretos WebRTC (STUN Google) e sinalização em Cloudflare Workers (Edge Serverless gratuito). Partidas online em tempo real com latência reduzida e custo zero de hospedagem.
 - **Protocolo de Rede e Algoritmo SNTP em Rust (`network_protocol.rs`):** Medição de RTT e offset temporal com compensação justa de lag até 200 ms e validação estrita de lances remotos por Bitboards FIDE.
 - **Central de Ajuda & Guia do Usuário (`HelpSupportScreen`):** Seção completa com manual de regras oficiais FIDE (Roque, En Passant, Afogamento, 50 lances), guia de conectividade e FAQ.
-- **Expansão da Cobertura de Testes:** Bateria ampliada para 81 testes automatizados (37 testes de núcleo Rust e 44 testes de interface e rede Flutter), com 100% de aprovação e zero falhas de layout.
+- **Integração Completa do Sistema Suíço FIDE:** Pareamento estrito sem repetições, cálculo instantâneo de Buchholz/Sonneborn-Berger via FFI, opções de disputa via Multiplayer P2P ou Tabuleiro Local (Pass & Play) e inscrição aberta de competidores.
+- **Saneamento Integral de Marca e Namespaces:** Pacote migrado para `chess_d`, namespace Android padronizado para `com.chessd.app` e expurgo de qualquer dependência de nomenclatura legada.
+- **Expansão da Cobertura de Testes:** Bateria ampliada para 83 testes automatizados (38 testes de núcleo Rust e 45 testes de interface e rede Flutter), com 100% de aprovação e zero falhas de layout.
 
 #### Artefatos Disponíveis e Somas de Verificação (v1.0.2):
 
