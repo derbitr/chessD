@@ -111,7 +111,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('SOBERANO CHESS'), findsOneWidget);
+      expect(find.text('CHESS DEMOCRÁTICO'), findsOneWidget);
       expect(find.text('88.5%'), findsOneWidget);
       expect(find.text('64.2%'), findsOneWidget);
       expect(find.text('Lances Brilhantes (!!)'), findsOneWidget);

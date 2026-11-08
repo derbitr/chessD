@@ -1,4 +1,4 @@
-# Soberano Chess
+# Chess Democrático
 
 Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica de partidas, desenvolvida com Flutter 3.47 e Rust 1.96. Totalmente offline, soberana e sem cobrança por recursos analíticos.
 
@@ -6,15 +6,15 @@ Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica 
 
 ## 1. Visão Geral do Projeto
 
-O Soberano Chess é um aplicativo de xadrez de alta performance projetado sob o princípio da soberania digital do usuário. Ao contrário de plataformas comerciais baseadas em assinaturas recorrentes (como as modalidades Platinum e Diamond de plataformas online), o Soberano Chess executa 100% das suas rotinas de validação de regras FIDE, geração de lances, busca minimax, árvores de abertura, repetição espaçada e cálculo de precisão algorítmica diretamente no dispositivo do usuário, sem emitir telemetria nem demandar conexão com a internet.
+O Chess Democrático é um aplicativo de xadrez de alta performance projetado sob o princípio da soberania digital do usuário. Ao contrário de plataformas comerciais baseadas em assinaturas recorrentes (como as modalidades Platinum e Diamond de plataformas online), o Chess Democrático executa 100% das suas rotinas de validação de regras FIDE, geração de lances, busca minimax, árvores de abertura, repetição espaçada e cálculo de precisão algorítmica diretamente no dispositivo do usuário, sem emitir telemetria nem demandar conexão com a internet.
 
 A infraestrutura foi construída combinando a expressividade e fluidez gráfica do Flutter (renderização a 120 FPS com suporte a gestos e temas de alto contraste) com a segurança de memória, determinismo e velocidade do Rust compilado para código nativo de máquina via Foreign Function Interface (FFI).
 
 ---
 
-## 2. Comparativo de Recursos: Soberano Chess vs. Plataformas Comerciais
+## 2. Comparativo de Recursos: Chess Democrático vs. Plataformas Comerciais
 
-| Funcionalidade | Plataformas Comerciais (Plano Gratuito) | Plataformas Comerciais (Diamond / \$120+/ano) | Soberano Chess (100% Gratuito e Livre) |
+| Funcionalidade | Plataformas Comerciais (Plano Gratuito) | Plataformas Comerciais (Diamond / \$120+/ano) | Chess Democrático (100% Gratuito e Livre) |
 | :--- | :--- | :--- | :--- |
 | Revisão de Partidas com Precisão CAPS2 | 1 análise por dia ou paywall | Ilimitada via nuvem proprietária | Ilimitada e Instantânea no dispositivo (Rust Core) |
 | Classificação de Lances (Brilhante, Melhor, Erro) | Oculta ou restrita | Exibida após processamento em servidor | Processamento local em milissegundos |
@@ -358,20 +358,20 @@ O arquivo gerado estará localizado em:
 
 | Artefato | Plataforma | Descrição | SHA-256 |
 | :--- | :--- | :--- | :--- |
-| `soberano-chess-v1.0.0-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `soberano_chess.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `59819A6FAA6D89436154805CD57FD0EE8B79ACD7565997DEFAE8D6A5A65CF065` |
-| `soberano-chess-v1.0.0-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (gerado via pipeline de compilação com suporte a arm64-v8a e armeabi-v7a) | Verificado via GitHub Actions CI/CD |
+| `chess-democratico-v1.0.0-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `soberano_chess.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `EF64DE7DEE88BB5CDCC361F626629F6F51B3149CEB01C3FA2DE32913C04DBDCA` |
+| `chess-democratico-v1.0.0-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (gerado via pipeline de compilação com suporte a arm64-v8a e armeabi-v7a) | Verificado via GitHub Actions CI/CD |
 
 ### 8.3 Instruções de Instalação e Execução
 
 #### No Windows:
-1. Extraia o conteúdo de `soberano-chess-v1.0.0-windows-x64.zip` em uma pasta de sua preferência.
+1. Extraia o conteúdo de `chess-democratico-v1.0.0-windows-x64.zip` em uma pasta de sua preferência.
 2. Certifique-se de que o arquivo `rust_core.dll` permaneça na mesma pasta do executável `soberano_chess.exe`.
 3. Dê um duplo clique em `soberano_chess.exe` para iniciar o aplicativo. Não é necessária nenhuma instalação adicional.
 
 #### No Android:
-1. Transfira o arquivo `app-release.apk` para o armazenamento do seu smartphone ou faça o download diretamente pelo navegador do aparelho.
+1. Transfira o arquivo `chess-democratico-v1.0.0-android.apk` para o armazenamento do seu smartphone ou faça o download diretamente pelo navegador do aparelho.
 2. Abra o arquivo no gerenciador de arquivos do Android e permita a instalação a partir da fonte selecionada, se solicitado pelo sistema operacional.
-3. Conclua a instalação e abra o aplicativo Soberano Chess. O aplicativo opera integralmente em modo offline desde a primeira inicialização.
+3. Conclua a instalação e abra o aplicativo Chess Democrático. O aplicativo opera integralmente em modo offline desde a primeira inicialização.
 
 ---
 

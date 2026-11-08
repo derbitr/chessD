@@ -30,7 +30,7 @@ class SoberanoChessApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Soberano Chess',
+      title: 'Chess Democrático',
       debugShowCheckedModeBanner: false,
       theme: ChessTheme.tournamentGreen.toThemeData(),
       home: const MainHubScreen(),
@@ -93,7 +93,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
             const Icon(Icons.shield, color: AppColors.primaryCyan, size: 24),
             const SizedBox(width: 8),
             Text(
-              'SOBERANO CHESS',
+              'CHESS DEMOCRÁTICO',
               style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.5),
             ),
           ],

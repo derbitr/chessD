@@ -17,19 +17,21 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android NDK
+      - name: Setup Android NDK
         run: |
-          yes | sdkmanager --licenses
-          sdkmanager "ndk;26.1.10909125"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          if [ ! -d "$ANDROID_HOME/ndk" ] || [ -z "$(ls -A $ANDROID_HOME/ndk 2>/dev/null)" ]; then
+            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;26.1.10909125"
+          fi
+          NDK_DIR=$(ls -d $ANDROID_HOME/ndk/* | sort -V | tail -n 1)
+          echo "ANDROID_NDK_HOME=$NDK_DIR" >> $GITHUB_ENV
+          echo "Using Android NDK at: $NDK_DIR"
 
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -41,15 +43,11 @@ jobs:
 
       - name: Build Rust Core Libraries for Android
         run: |
-          export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125
-          mkdir -p android/app/src/main/jniLibs/arm64-v8a
-          mkdir -p android/app/src/main/jniLibs/armeabi-v7a
-          mkdir -p android/app/src/main/jniLibs/x86_64
+          mkdir -p android/app/src/main/jniLibs
           cd rust_core
-          cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs build --release
-          cargo ndk -t armeabi-v7a -o ../android/app/src/main/jniLibs build --release
-          cargo ndk -t x86_64 -o ../android/app/src/main/jniLibs build --release
+          cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -o ../android/app/src/main/jniLibs build --release
           cd ..
+          ls -R android/app/src/main/jniLibs
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -63,14 +61,16 @@ jobs:
       - name: Build Release APK
         run: flutter build apk --release
 
-      - name: Rename and Stage APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk soberano-chess-v1.0.0-android.apk
+      - name: Stage Android APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk chess-democratico-v1.0.0-android.apk
+          ls -lh chess-democratico-v1.0.0-android.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: soberano-chess-android-apk
-          path: soberano-chess-v1.0.0-android.apk
+          name: chess-democratico-android-apk
+          path: chess-democratico-v1.0.0-android.apk
 
   build-windows:
     name: Build Windows x64 Executable
@@ -103,18 +103,17 @@ jobs:
       - name: Package Windows Release Bundle
         run: |
           Copy-Item "rust_core\target\release\rust_core.dll" -Destination "build\windows\x64\runner\Release\rust_core.dll" -Force
-          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "soberano-chess-v1.0.0-windows-x64.zip" -Force
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "chess-democratico-v1.0.0-windows-x64.zip" -Force
 
       - name: Upload Windows Bundle Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: soberano-chess-windows-bundle
-          path: soberano-chess-v1.0.0-windows-x64.zip
+          name: chess-democratico-windows-bundle
+          path: chess-democratico-v1.0.0-windows-x64.zip
 
   publish-release:
     name: Publish GitHub Release
     needs: [build-android, build-windows]
-    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -123,21 +122,17 @@ jobs:
       - name: Download Android Artifact
         uses: actions/download-artifact@v4
         with:
-          name: soberano-chess-android-apk
+          name: chess-democratico-android-apk
           path: ./release-assets
 
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
-          name: soberano-chess-windows-bundle
+          name: chess-democratico-windows-bundle
           path: ./release-assets
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            ./release-assets/soberano-chess-v1.0.0-android.apk
-            ./release-assets/soberano-chess-v1.0.0-windows-x64.zip
-          draft: false
-          prerelease: false
-          generate_release_notes: true
+      - name: Upload to Existing Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v1.0.0 ./release-assets/* --clobber || gh release create v1.0.0 ./release-assets/* --title "Chess Democrático v1.0.0" --notes "Release oficial do Chess Democrático."

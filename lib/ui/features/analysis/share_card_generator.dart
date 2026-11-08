@@ -17,7 +17,7 @@ class ShareCardScreen extends StatefulWidget {
     required this.brilliantsCount,
     required this.blundersCount,
     this.playerName = 'Você',
-    this.opponentName = 'Bot Soberano',
+    this.opponentName = 'Bot Democrático',
   });
 
   @override
@@ -122,7 +122,7 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'SOBERANO CHESS',
+                                        'CHESS DEMOCRÁTICO',
                                         style: AppTypography.titleMedium.copyWith(
                                           letterSpacing: 1.0,
                                           color: AppColors.secondaryAmber,
@@ -314,9 +314,12 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'soberano.app • @soberanochess',
-                            style: AppTypography.labelSmall,
+                          const Expanded(
+                            child: Text(
+                              'chessdemocratico.app • @chessdemocratico',
+                              style: AppTypography.labelSmall,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           Row(
                             children: const [

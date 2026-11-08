@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="soberano_chess"
+        android:label="Chess Democrático"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
