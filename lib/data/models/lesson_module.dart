@@ -49,7 +49,7 @@ class LessonModule {
     required this.steps,
   });
 
-  /// Catálogo Completo dos 6 Módulos da Trilha Soberana (Estilo Duolingo)
+  /// Catálogo Completo dos 6 Módulos da Trilha de Aprendizado (Estilo Duolingo)
   static List<LessonModule> getCuratedCurriculum() {
     return const [
       LessonModule(

@@ -101,7 +101,7 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Header da Marca Soberana
+                      // Header da Marca chessD
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

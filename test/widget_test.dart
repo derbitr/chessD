@@ -3,13 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:soberano_chess/main.dart';
 
 void main() {
-  testWidgets('SoberanoChessApp inicializa e renderiza tela principal com todos os modos', (WidgetTester tester) async {
+  testWidgets('ChessDApp inicializa e renderiza tela principal com todos os modos', (WidgetTester tester) async {
     // Configura resolução de tela mobile ampla para testes de integração de hub
     tester.view.physicalSize = const Size(1080, 6000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
-    await tester.pumpWidget(const SoberanoChessApp());
+    await tester.pumpWidget(const ChessDApp());
     await tester.pumpAndSettle();
 
     expect(find.text('chessD'), findsOneWidget);

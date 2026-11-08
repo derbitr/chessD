@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de Cores Soberana
+/// Paleta de Cores chessD
 /// Projetada com contraste superior a 12:1 (acima do WCAG AAA 7:1) para eliminar
 /// a fadiga ocular em sessões prolongadas de treino noturno e garantir o Pop-Out
 /// pré-atencional de Anne Treisman em lances críticos.

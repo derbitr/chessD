@@ -35,7 +35,7 @@ class _OfflinePacksScreenState extends State<OfflinePacksScreen> {
       'sha256': '7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
     },
     {
-      'title': 'Biblioteca Soberana Universal Lichess/FIDE',
+      'title': 'Biblioteca Universal de Partidas Lichess/FIDE',
       'puzzles_count': '4.200.000 puzzles',
       'size_zst': '184.2 MB',
       'is_installed': false,

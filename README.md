@@ -1,12 +1,12 @@
 # chessD
 
-Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica de partidas, desenvolvida com Flutter 3.47 e Rust 1.96. Totalmente offline, soberana e sem cobrança por recursos analíticos.
+Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica de partidas, desenvolvida com Flutter 3.47 e Rust 1.96. Totalmente offline, gratuito e sem cobrança por recursos analíticos.
 
 ---
 
 ## 1. Visão Geral do Projeto
 
-O chessD é um aplicativo de xadrez de alta performance projetado sob o princípio da soberania digital do usuário. Ao contrário de plataformas comerciais baseadas em assinaturas recorrentes (como as modalidades Platinum e Diamond de plataformas online), o chessD executa 100% das suas rotinas de validação de regras FIDE, geração de lances, busca minimax, árvores de abertura, repetição espaçada e cálculo de precisão algorítmica diretamente no dispositivo do usuário, sem emitir telemetria nem demandar conexão com a internet.
+O chessD é um aplicativo de xadrez de alta performance projetado sob o princípio da total privacidade e autonomia do usuário. Ao contrário de plataformas comerciais baseadas em assinaturas recorrentes (como as modalidades Platinum e Diamond de plataformas online), o chessD executa 100% das suas rotinas de validação de regras FIDE, geração de lances, busca minimax, árvores de abertura, repetição espaçada e cálculo de precisão algorítmica diretamente no dispositivo do usuário, sem emitir telemetria nem demandar conexão com a internet.
 
 A infraestrutura foi construída combinando a expressividade e fluidez gráfica do Flutter (renderização a 120 FPS com suporte a gestos e temas de alto contraste) com a segurança de memória, determinismo e velocidade do Rust compilado para código nativo de máquina via Foreign Function Interface (FFI).
 
@@ -433,4 +433,4 @@ O arquivo gerado estará localizado em:
 
 ## 9. Licença e Filosofia
 
-Este projeto é disponibilizado sob os preceitos do software livre e soberano. Não contém telemetria oculta, não exige criação de contas de usuário e não depende de servidores remotos para nenhuma de suas funções principais.
+Este projeto é disponibilizado sob os preceitos do software livre e de código aberto. Não contém telemetria oculta, não exige criação de contas de usuário e não depende de servidores remotos para nenhuma de suas funções principais.

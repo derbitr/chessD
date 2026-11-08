@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// Tipografia Soberana: Deliberada, limpa e legível sem floreios genéricos de IA.
+/// Tipografia chessD: Deliberada, limpa e legível sem floreios genéricos de IA.
 class AppTypography {
   AppTypography._();
 

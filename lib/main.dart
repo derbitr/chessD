@@ -22,11 +22,11 @@ import 'package:soberano_chess/ui/features/settings/theme_customization_screen.d
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SoberanoChessApp());
+  runApp(const ChessDApp());
 }
 
-class SoberanoChessApp extends StatelessWidget {
-  const SoberanoChessApp({super.key});
+class ChessDApp extends StatelessWidget {
+  const ChessDApp({super.key});
 
   @override
   Widget build(BuildContext context) {
