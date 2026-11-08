@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/services/wifi_cast_server.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
+import 'package:chess_d/services/wifi_cast_server.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
 
 class OfflinePacksScreen extends StatefulWidget {
   final WifiCastServer castServer;
@@ -55,6 +55,7 @@ class _OfflinePacksScreenState extends State<OfflinePacksScreen> {
   Future<void> _toggleWifiCast(bool enable) async {
     if (enable) {
       final ok = await widget.castServer.start();
+      if (!mounted) return;
       setState(() {
         isCastActive = ok;
         castUrl = 'http://${widget.castServer.localIpAddress}:${widget.castServer.port}';
@@ -69,6 +70,7 @@ class _OfflinePacksScreenState extends State<OfflinePacksScreen> {
       }
     } else {
       await widget.castServer.stop();
+      if (!mounted) return;
       setState(() {
         isCastActive = false;
         castUrl = '';

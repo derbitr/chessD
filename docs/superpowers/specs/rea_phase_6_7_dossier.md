@@ -1,5 +1,5 @@
 # Dossiê Técnico de Engenharia Reversa (Fases 6 e 7): Repetição Espaçada (SM-2), Torneios FIDE & Perícia Forense Anti-Cheat
-## Especificação Canônica Clean-Room para o Aplicativo Soberano Chess Mobile (Flutter + Rust Core)
+## Especificação Canônica Clean-Room para o Aplicativo chessD (Flutter + Rust Core)
 
 **Documento:** `rea_phase_6_7_dossier.md`  
 **Data:** 08 de Novembro de 2026  
@@ -12,7 +12,7 @@
 
 ## Sumário Executivo
 
-Este documento estabelece as especificações matemáticas, contratos de integração e algoritmos determinísticos para as **Fases 6 e 7** do **Soberano Chess Mobile**, fornecendo a dissecação canônica de engenharia reversa para:
+Este documento estabelece as especificações matemáticas, contratos de integração e algoritmos determinísticos para as **Fases 6 e 7** do **chessD**, fornecendo a dissecação canônica de engenharia reversa para:
 
 1. **Algoritmo SuperMemo SM-2 para Repertório de Xadrez (Spaced Repetition System - SRS):**
    - Equações de ajuste contínuo do Fator de Facilidade ($EF$), limites estritos $[1.3, 2.5]$, progressão de intervalos $I(n)$ e tratamento estocástico de falhas ($q < 3$).

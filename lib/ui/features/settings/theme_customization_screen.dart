@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/ui/core/chess_theme.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_theme.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
 
 class ThemeCustomizationScreen extends StatefulWidget {
   const ThemeCustomizationScreen({super.key});

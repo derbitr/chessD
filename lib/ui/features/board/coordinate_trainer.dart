@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
-import 'package:soberano_chess/ui/core/chess_theme.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_theme.dart';
 
 class CoordinateTrainerScreen extends StatefulWidget {
   final ChessTheme theme;
@@ -42,6 +42,10 @@ class _CoordinateTrainerScreenState extends State<CoordinateTrainerScreen> {
 
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       if (timeLeft <= 1) {
         timer.cancel();
         setState(() {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
 import 'bot_game_screen.dart';
 
 class BotStudioScreen extends StatefulWidget {
@@ -142,6 +142,11 @@ class _BotStudioScreenState extends State<BotStudioScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('PERSONALIDADE & ESTILO TÁTICO', style: AppTypography.labelSmall),
+                    const SizedBox(height: 4),
+                    Text(
+                      _getPersonalityName(personality),
+                      style: AppTypography.bodySmall.copyWith(color: AppColors.primaryCyan, fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       children: [

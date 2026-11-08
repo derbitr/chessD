@@ -1,9 +1,9 @@
 import 'dart:ffi';
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/data/repositories/puzzle_repository.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
+import 'package:chess_d/data/repositories/puzzle_repository.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
 import '../board/chess_board_widget.dart';
 
 class PuzzleLadderScreen extends StatefulWidget {
@@ -48,6 +48,7 @@ class _PuzzleLadderScreenState extends State<PuzzleLadderScreen> {
 
   Future<void> _startNewLadder() async {
     final sequence = await puzzleRepo.getLadderSequence();
+    if (!mounted) return;
     setState(() {
       if (ladderSequence.isNotEmpty) {
         widget.ffi.freeGame(_game);
@@ -100,6 +101,7 @@ class _PuzzleLadderScreenState extends State<PuzzleLadderScreen> {
         final opponentUci = puzzle.movesUci[currentMoveIdx];
         widget.ffi.playUci(_game, opponentUci);
         currentMoveIdx += 1;
+        setState(() {});
       }
     } else {
       // Errou!

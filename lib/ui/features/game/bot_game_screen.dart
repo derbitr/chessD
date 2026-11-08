@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
-import 'package:soberano_chess/ui/core/chess_theme.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
 import '../board/chess_board_widget.dart';
 import '../analysis/game_review_screen.dart';
 

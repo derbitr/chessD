@@ -1,8 +1,8 @@
 import 'dart:ffi';
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/chess_theme.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/chess_theme.dart';
 
 class ChessBoardWidget extends StatefulWidget {
   final ChessRustFfi ffi;
@@ -45,9 +45,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   @override
   void didUpdateWidget(covariant ChessBoardWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.game != widget.game || oldWidget.showHeatmap != widget.showHeatmap) {
-      _refreshState();
-    }
+    _refreshState();
   }
 
   void _refreshState() {
@@ -70,13 +68,23 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
       // Tentar selecionar peça
       final moves = (currentStatus!['legal_moves'] as List? ?? [])
           .where((m) => m['from'] == square)
-          .map((m) => m['to'].toString())
           .toList();
 
-      if (moves.isNotEmpty) {
+      final targets = <String>{};
+      for (final m in moves) {
+        targets.add(m['to'].toString());
+        if (m['is_castling'] == true) {
+          final uci = m['uci']?.toString() ?? '';
+          if (uci.length >= 4) {
+            targets.add(uci.substring(2, 4));
+          }
+        }
+      }
+
+      if (targets.isNotEmpty) {
         setState(() {
           selectedSquare = square;
-          legalTargets = moves;
+          legalTargets = targets.toList();
         });
       }
     } else {
@@ -115,13 +123,23 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
         // Tentar selecionar outra peça legal
         final moves = (currentStatus!['legal_moves'] as List? ?? [])
             .where((m) => m['from'] == square)
-            .map((m) => m['to'].toString())
             .toList();
 
+        final targets = <String>{};
+        for (final m in moves) {
+          targets.add(m['to'].toString());
+          if (m['is_castling'] == true) {
+            final uci = m['uci']?.toString() ?? '';
+            if (uci.length >= 4) {
+              targets.add(uci.substring(2, 4));
+            }
+          }
+        }
+
         setState(() {
-          if (moves.isNotEmpty) {
+          if (targets.isNotEmpty) {
             selectedSquare = square;
-            legalTargets = moves;
+            legalTargets = targets.toList();
           } else {
             selectedSquare = null;
             legalTargets.clear();
@@ -146,10 +164,12 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
         if (num != null) {
           file += num;
         } else {
-          final fileLetter = String.fromCharCode('a'.codeUnitAt(0) + file);
-          final square = '$fileLetter$rankNum';
-          pieces[square] = char;
-          file += 1;
+          if (file < 8) {
+            final fileLetter = String.fromCharCode('a'.codeUnitAt(0) + file);
+            final square = '$fileLetter$rankNum';
+            pieces[square] = char;
+            file += 1;
+          }
         }
       }
     }

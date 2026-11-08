@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
 
 class AntiCheatAuditScreen extends StatefulWidget {
   final ChessRustFfi ffi;
@@ -61,6 +61,8 @@ class _AntiCheatAuditScreenState extends State<AntiCheatAuditScreen> {
       centipawnLosses: cpls,
       moveTimesMs: times,
     );
+
+    if (!mounted) return;
 
     setState(() {
       auditResult = res;

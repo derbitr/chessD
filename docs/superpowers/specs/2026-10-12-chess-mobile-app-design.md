@@ -1,4 +1,4 @@
-# Especificação de Design: Aplicativo Mobile de Xadrez Soberano (Android)
+# Especificação de Design: chessD (Android)
 
 **Data:** 13 de Outubro de 2026 (Atualizado em 07 de Novembro de 2026)  
 **Status:** Definitivo, Aprovado & Hiper-Expandido (Arquitetura Suprema)  
@@ -12,7 +12,7 @@
 
 Plataformas consolidadas como o Chess.com construíram impérios comerciais baseados na retenção e monetização restritiva do aprendizado de xadrez: paywalls para quebra-cabeças ilimitados, limites em árvores de abertura, cobrança de assinaturas caras (como o plano Diamante) para acessar análises com engine, relatórios de fraquezas e ferramentas de estudo.
 
-Este projeto estabelece o **Aplicativo de Xadrez Definitivo e Soberano para Android**:
+Este projeto estabelece o **Aplicativo de Xadrez Definitivo e chessD para Android**:
 - **100% Gratuito e Livre de Paywalls:** Todas as ferramentas de elite liberadas sem restrição de vidas ou créditos.
 - **100% Funcional Offline:** Funciona sem internet (avião, metrô, viagens), rodando motor neural e acervo no próprio dispositivo.
 - **Arquitetura de Alta Performance:** Combinação da fluidez visual e gamificada do **Flutter** a 120 FPS com a segurança de memória e a velocidade computacional do **Rust**.
@@ -91,7 +91,7 @@ Adotamos a divisão de responsabilidades mais robusta da engenharia móvel moder
 - **Treinador de Finais Teóricos & Bases Syzygy:** Posições obrigatórias (Lucena, Philidor, oposição) com resolução matemática precisa de finais elementares.
 - **Importador de Jogos (Chess.com / Lichess PGN):** Sincronização direta por usuário ou colar PGN para análise gratuita.
 
-### 3.6. Conectividade Soberana & Integração com Hardware
+### 3.6. Conectividade chessD & Integração com Hardware
 - **Modo Pass & Play:** Tabuleiro espelhado com relógio tátil duplo para dois jogadores no mesmo smartphone.
 - **Multiplayer P2P Local (Sem Internet):** Conexão via Bluetooth RFCOMM / Wi-Fi Direct para disputas entre aparelhos próximos sem necessidade de servidor.
 - **Integração com Tabuleiros Físicos Eletrônicos (Smart Boards):** Conexão Bluetooth com tabuleiros físicos (DGT Pegasus, Chessnut Air, Millennium) para jogar fisicamente e analisar no app.

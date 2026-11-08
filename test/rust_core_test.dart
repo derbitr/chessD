@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
 
 void main() {
   late ChessRustFfi ffi;

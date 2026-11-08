@@ -11,3 +11,6 @@ rust_core/target/
 .vscode/
 .idea/
 *.iml
+
+# Legacy swarm
+.swarm/

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/features/analysis/game_review_screen.dart';
-import 'package:soberano_chess/ui/features/analysis/share_card_generator.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/features/analysis/game_review_screen.dart';
+import 'package:chess_d/ui/features/analysis/share_card_generator.dart';
 
 void main() {
   late ChessRustFfi ffi;

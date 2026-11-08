@@ -102,6 +102,14 @@ mod tests {
         assert!(legals_ok.iter().any(|m| m.uci == "e1g1"), "Roque menor deve ser permitido");
         assert!(legals_ok.iter().any(|m| m.uci == "e1c1"), "Roque maior deve ser permitido");
 
+        let mut game1 = ChessGame::from_fen("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1").unwrap();
+        let res1 = game1.play_uci("e1g1");
+        assert!(res1.is_ok(), "e1g1 deve ser aceito para roque menor");
+
+        let mut game2 = ChessGame::from_fen("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1").unwrap();
+        let res2 = game2.play_uci("e1h1");
+        println!("play_uci(e1h1) result: {:?}", res2);
+
         let game_blocked = ChessGame::from_fen("r3k2r/8/b7/8/8/8/8/R3K2R w KQkq - 0 1").unwrap();
         let legals_blocked = game_blocked.legal_moves();
         assert!(

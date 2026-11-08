@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
 import 'share_card_generator.dart';
 
 class GameReviewScreen extends StatefulWidget {
@@ -49,61 +49,65 @@ class _GameReviewScreenState extends State<GameReviewScreen> {
 
     int prevEval = 20;
 
-    for (int i = 0; i < widget.movesPlayedUci.length; i++) {
-      final uci = widget.movesPlayedUci[i];
-      final isWhite = (i % 2 == 0);
+    try {
+      for (int i = 0; i < widget.movesPlayedUci.length; i++) {
+        final uci = widget.movesPlayedUci[i];
+        final isWhite = (i % 2 == 0);
 
-      // Avaliação profunda da posição antes do lance
-      final evalBefore = widget.ffi.evaluate(game, depth: 2);
-      final bestUci = evalBefore['best_move_uci'] as String? ?? uci;
-      final evalCp = evalBefore['centipawns'] as int? ?? prevEval;
+        // Avaliação profunda da posição antes do lance
+        final evalBefore = widget.ffi.evaluate(game, depth: 2);
+        final bestUci = evalBefore['best_move_uci'] as String? ?? uci;
+        final evalCp = evalBefore['centipawns'] as int? ?? prevEval;
 
-      widget.ffi.playUci(game, uci);
+        widget.ffi.playUci(game, uci);
 
-      // Avaliação após o lance
-      final evalAfterRes = widget.ffi.evaluate(game, depth: 2);
-      final evalAfterCp = evalAfterRes['centipawns'] as int? ?? evalCp;
+        // Avaliação após o lance
+        final evalAfterRes = widget.ffi.evaluate(game, depth: 2);
+        final evalAfterCp = evalAfterRes['centipawns'] as int? ?? evalCp;
 
-      // Classifica o lance no Rust via CAPS2
-      final analysis = widget.ffi.classifyMove(
-        isWhite: isWhite,
-        playedUci: uci,
-        bestUci: bestUci,
-        evalBefore: evalCp,
-        evalAfter: evalAfterCp,
-        timeSpentMs: 1200, // Simulado
-      );
+        // Classifica o lance no Rust via CAPS2
+        final analysis = widget.ffi.classifyMove(
+          isWhite: isWhite,
+          playedUci: uci,
+          bestUci: bestUci,
+          evalBefore: evalCp,
+          evalAfter: evalAfterCp,
+          timeSpentMs: 1200, // Simulado
+        );
 
-      final acc = (analysis['move_accuracy'] as num?)?.toDouble() ?? 85.0;
-      final cat = analysis['category'] as String? ?? 'Best';
+        final acc = (analysis['move_accuracy'] as num?)?.toDouble() ?? 85.0;
+        final cat = analysis['category'] as String? ?? 'Best';
 
-      if (isWhite) {
-        totalWhiteAcc += acc;
-        whiteCount += 1;
-        if (cat == 'Brilliant') whiteBrilliants += 1;
-        if (cat == 'Blunder') whiteBlunders += 1;
-      } else {
-        totalBlackAcc += acc;
-        blackCount += 1;
-        if (cat == 'Blunder') blackBlunders += 1;
+        if (isWhite) {
+          totalWhiteAcc += acc;
+          whiteCount += 1;
+          if (cat == 'Brilliant') whiteBrilliants += 1;
+          if (cat == 'Blunder') whiteBlunders += 1;
+        } else {
+          totalBlackAcc += acc;
+          blackCount += 1;
+          if (cat == 'Blunder') blackBlunders += 1;
+        }
+
+        analyses.add({
+          'move_number': (i ~/ 2) + 1,
+          'is_white': isWhite,
+          'played_uci': uci,
+          'best_uci': bestUci,
+          'eval_after_cp': evalAfterCp,
+          'accuracy': acc,
+          'category': cat,
+          'explanation': analysis['pedagogical_explanation'] ?? 'Lance calculado.',
+          'is_panic': analysis['is_panic_move'] ?? false,
+        });
+
+        prevEval = evalAfterCp;
       }
-
-      analyses.add({
-        'move_number': (i ~/ 2) + 1,
-        'is_white': isWhite,
-        'played_uci': uci,
-        'best_uci': bestUci,
-        'eval_after_cp': evalAfterCp,
-        'accuracy': acc,
-        'category': cat,
-        'explanation': analysis['pedagogical_explanation'] ?? 'Lance calculado.',
-        'is_panic': analysis['is_panic_move'] ?? false,
-      });
-
-      prevEval = evalAfterCp;
+    } finally {
+      widget.ffi.freeGame(game);
     }
 
-    widget.ffi.freeGame(game);
+    if (!mounted) return;
 
     setState(() {
       whiteAccuracy = whiteCount > 0 ? totalWhiteAcc / whiteCount : 80.0;

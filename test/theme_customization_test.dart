@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/ui/core/chess_theme.dart';
-import 'package:soberano_chess/ui/features/settings/theme_customization_screen.dart';
+import 'package:chess_d/ui/core/chess_theme.dart';
+import 'package:chess_d/ui/features/settings/theme_customization_screen.dart';
 
 void main() {
   group('Módulo de Customização Visual & Paletas (chessD)', () {

@@ -1,4 +1,4 @@
-# Plano de Execução Detalhado: Aplicativo Mobile de Xadrez Soberano (Android)
+# Plano de Execução Detalhado: chessD (Android)
 
 **Data:** 13 de Outubro de 2026 (Atualizado em 07 de Novembro de 2026)  
 **Documento de Design de Referência:** [`docs/superpowers/specs/2026-10-12-chess-mobile-app-design.md`](file:///C:/Users/Breno/.gemini/antigravity/scratch/chess-app/docs/superpowers/specs/2026-10-12-chess-mobile-app-design.md)  
@@ -68,7 +68,7 @@
 
 ### Tarefas
 1. **Estruturação do Projeto Híbrido:**
-   - Criar projeto Flutter Android (`com.soberano.chess`).
+   - Criar projeto Flutter Android (`com.chessd.app`).
    - Configurar o crate de Rust em `rust/` integrado ao Android NDK via Cargo NDK e `flutter_rust_bridge_codegen`.
    - Compilação direcionada para `arm64-v8a` com flags de alta performance no `Cargo.toml` (`opt-level = 3`, `lto = true`, `codegen-units = 1`).
 2. **Integração do Motor Stockfish & Regras em Rust:**
@@ -160,7 +160,7 @@
 
 ---
 
-## Fase 6: Módulos de Elite, Visão Computacional & Conectividade Soberana
+## Fase 6: Módulos de Elite, Visão Computacional & Conectividade chessD
 
 **Skills:** `test-driven-development`, `flutter-apply-architecture-best-practices`, Bluetooth / Sockets
 

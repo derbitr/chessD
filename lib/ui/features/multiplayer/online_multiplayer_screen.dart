@@ -76,11 +76,13 @@ class _OnlineMultiplayerScreenState extends State<OnlineMultiplayerScreen> {
   }
 
   Future<void> _handleCreateRoom() async {
-    final code = await _service.createRoom(
+    await _service.createRoom(
       preferredColor: _selectedColor,
       timeMinutes: _selectedMinutes,
       incrementSeconds: _selectedIncrement,
     );
+
+    if (!mounted) return;
 
     try { _ffi.freeGame(_game); } catch (_) {}
     _game = _ffi.newGame();
@@ -105,6 +107,8 @@ class _OnlineMultiplayerScreenState extends State<OnlineMultiplayerScreen> {
     }
 
     final ok = await _service.joinRoom(code);
+    if (!mounted) return;
+
     if (ok) {
       try { _ffi.freeGame(_game); } catch (_) {}
       _game = _ffi.newGame();
@@ -144,6 +148,7 @@ class _OnlineMultiplayerScreenState extends State<OnlineMultiplayerScreen> {
     );
 
     setState(() {
+      _currentFen = _ffi.getCurrentFen(_game);
       _isMyTurn = false;
     });
   }

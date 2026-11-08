@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/data/models/lesson_module.dart';
-import 'package:soberano_chess/data/repositories/puzzle_repository.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
+import 'package:chess_d/data/models/lesson_module.dart';
+import 'package:chess_d/data/repositories/puzzle_repository.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
 
 void main() {
   late ChessRustFfi ffi;

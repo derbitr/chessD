@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'package:flutter/material.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/core/app_colors.dart';
-import 'package:soberano_chess/ui/core/app_typography.dart';
-import 'package:soberano_chess/ui/core/chess_theme.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/core/app_colors.dart';
+import 'package:chess_d/ui/core/app_typography.dart';
 import 'chess_board_widget.dart';
 
 class PassAndPlayScreen extends StatefulWidget {
@@ -53,6 +52,10 @@ class _PassAndPlayScreenState extends State<PassAndPlayScreen> {
     if (isClockRunning || isGameOver) return;
     isClockRunning = true;
     _clockTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       setState(() {
         if (currentTurn == 'white') {
           whiteTimeMillis = (whiteTimeMillis - 100).clamp(0, 99999999);

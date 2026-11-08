@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/data/models/lesson_module.dart';
-import 'package:soberano_chess/data/repositories/puzzle_repository.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/features/learning/learning_track_screen.dart';
-import 'package:soberano_chess/ui/features/training/infinite_puzzles_screen.dart';
-import 'package:soberano_chess/ui/features/training/puzzle_ladder_screen.dart';
+import 'package:chess_d/data/models/lesson_module.dart';
+import 'package:chess_d/data/repositories/puzzle_repository.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/features/learning/learning_track_screen.dart';
+import 'package:chess_d/ui/features/training/infinite_puzzles_screen.dart';
+import 'package:chess_d/ui/features/training/puzzle_ladder_screen.dart';
 
 void main() {
   late ChessRustFfi ffi;

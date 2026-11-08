@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/services/p2p_multiplayer_service.dart';
-import 'package:soberano_chess/ui/features/multiplayer/online_multiplayer_screen.dart';
-import 'package:soberano_chess/ui/features/settings/help_support_screen.dart';
+import 'package:chess_d/services/p2p_multiplayer_service.dart';
+import 'package:chess_d/ui/features/multiplayer/online_multiplayer_screen.dart';
+import 'package:chess_d/ui/features/settings/help_support_screen.dart';
 
 void main() {
   group('Módulo Multiplayer Online P2P & Ajuda (chessD)', () {

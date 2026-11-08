@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/services/wifi_cast_server.dart';
-import 'package:soberano_chess/ui/features/settings/offline_packs_screen.dart';
+import 'package:chess_d/services/wifi_cast_server.dart';
+import 'package:chess_d/ui/features/settings/offline_packs_screen.dart';
 
 void main() {
   group('Fase 7 - Servidor Wi-Fi Cast (Smart TV & PC)', () {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/features/analysis/anti_cheat_audit_screen.dart';
-import 'package:soberano_chess/ui/features/game/bot_studio_screen.dart';
-import 'package:soberano_chess/ui/features/openings/opening_explorer_screen.dart';
-import 'package:soberano_chess/ui/features/repertoire/repertoire_trainer_screen.dart';
-import 'package:soberano_chess/ui/features/training/retry_mistakes_screen.dart';
-import 'package:soberano_chess/ui/features/tournament/tournament_manager_screen.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/features/analysis/anti_cheat_audit_screen.dart';
+import 'package:chess_d/ui/features/game/bot_studio_screen.dart';
+import 'package:chess_d/ui/features/openings/opening_explorer_screen.dart';
+import 'package:chess_d/ui/features/repertoire/repertoire_trainer_screen.dart';
+import 'package:chess_d/ui/features/training/retry_mistakes_screen.dart';
+import 'package:chess_d/ui/features/tournament/tournament_manager_screen.dart';
 
 void main() {
   late ChessRustFfi ffi;

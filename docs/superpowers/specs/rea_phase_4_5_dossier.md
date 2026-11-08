@@ -1,5 +1,5 @@
 # Dossiê Técnico de Engenharia Reversa (Fases 4 e 5): Gamificação, CAPS2, Coach Pedagógico & Auditoria de Tilt
-## Especificação Clean-Room para o Aplicativo Soberano Chess Mobile (Flutter + Rust Core)
+## Especificação Clean-Room para o Aplicativo chessD (Flutter + Rust Core)
 
 **Documento:** `rea_phase_4_5_dossier.md`  
 **Data:** 07 de Novembro de 2026  
@@ -12,7 +12,7 @@
 
 ## Sumário Executivo
 
-Este documento estabelece as especificações canônicas para as **Fases 4 e 5** da esteira de desenvolvimento do **Soberano Chess Mobile**, fornecendo a dissecação matemática, algoritmos geométricos, calibração estocástica e regras de negócio reversas necessárias para:
+Este documento estabelece as especificações canônicas para as **Fases 4 e 5** da esteira de desenvolvimento do **chessD**, fornecendo a dissecação matemática, algoritmos geométricos, calibração estocástica e regras de negócio reversas necessárias para:
 
 1. **Trilha Gamificada Estilo Duolingo & Chess.com:** Geometria do *Snake Path* (algoritmo senoidal com splines cúbicas de Bézier), estados de nós, chefões temáticos, progressão de XP e desbloqueio.
 2. **Refinamento do Classificador de Lances CAPS2:** Critérios estritos para lances *Brilhantes* (`!!`), *Ótimos* (`!`), limiares exatos de $\Delta W$ (Delta Win Probability) para *Erro* (`?`) e *Gafe* (`??`), e fórmulas de pontuação individual e global da partida.
@@ -187,7 +187,7 @@ $$\text{XP}_{\text{necessário}}(L) = 50 \times (L - 1)^2$$
 | **10** | 4.050 XP | Bispo Estrategista |
 | **15** | 9.800 XP | Torre de Ferro |
 | **20** | 18.050 XP | Dama Dominante |
-| **30** | 42.050 XP | Soberano Mestre |
+| **30** | 42.050 XP | chessD Mestre |
 
 #### C. Condições Determinísticas de Desbloqueio:
 - **Desbloqueio de Nó Seguinte:** O nó $i+1$ só se torna `Active` quando o nó $i$ acumular pelo menos **1 estrela** ($\text{acertos} \ge 60\%$).
@@ -392,8 +392,8 @@ O objetivo do Share Card é transformar qualquer partida analisada em uma peça 
 #### B. Hierarquia Visual e Design Tokens (Dark Theme):
 - **Fundo:** Dark Obsidian Slate (`#0B0F19`) com gradiente radial sutil no topo (`#1E293B`) e malha quadriculada de baixa opacidade ($3\%$).
 - **Header:**
-  - Logotipo e Identidade: Ícone Soberano dourado (`#F59E0B`) + tipografia `Outfit` / `Inter Bold`.
-  - Badge de Modalidade: *"⚡ Blitz 3+2 • Partida Soberana Offline"*.
+  - Logotipo e Identidade: Ícone chessD dourado (`#F59E0B`) + tipografia `Outfit` / `Inter Bold`.
+  - Badge de Modalidade: *"⚡ Blitz 3+2 • Partida chessD Offline"*.
 - **Banner Versus (Jogadores & Precisão CAPS2):**
   - Jogador Brancas: Nome, Avatar circular com anel de cor, rating Elo e barra percentual CAPS2 (ex: **88.4%** em Emerald `#10B981`).
   - Jogador Pretas: Nome, Avatar circular, rating Elo e barra percentual CAPS2 (ex: **64.2%** em Amber `#F59E0B`).
@@ -405,7 +405,7 @@ O objetivo do Share Card é transformar qualquer partida analisada em uma peça 
   - Gráfico de área compacto mostrando a evolução da vantagem de $+10.0$ a $-10.0$, preenchido em branco translúcido acima do zero e preto translúcido abaixo.
 - **Matriz Comparativa de Lances (Badges Oficiais):**
   - Tabela lado a lado contendo contadores de: `!! Brilhante`, `★ Melhor`, `✓ Excelente`, `?! Imprecisão`, `? Erro`, `?? Gafe`.
-- **Rodapé de Soberania:**
+- **Rodapé de Autonomia:**
   - Frase de posicionamento: *"Xadrez de Alta Performance 100% Offline e Livre de Paywalls"*.
   - QR Code vetorial offline embutido contendo a string compactada PGN/FEN da partida para importar instantaneamente em outro celular.
 

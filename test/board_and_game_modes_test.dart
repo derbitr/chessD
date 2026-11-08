@@ -1,9 +1,9 @@
 import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/services/chess_rust_ffi.dart';
-import 'package:soberano_chess/ui/features/board/chess_board_widget.dart';
-import 'package:soberano_chess/ui/features/board/coordinate_trainer.dart';
+import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/ui/features/board/chess_board_widget.dart';
+import 'package:chess_d/ui/features/board/coordinate_trainer.dart';
 
 void main() {
   late ChessRustFfi ffi;

@@ -1,5 +1,5 @@
 # Dossiê Técnico de Engenharia Reversa & Forense: Ecossistema Chess.com
-## Especificação Clean-Room para o Aplicativo Mobile de Xadrez Soberano (Rust Core + Flutter)
+## Especificação Clean-Room para o chessD (Rust Core + Flutter)
 
 **Documento:** `chess_com_reverse_engineering_dossier.md`  
 **Data:** 07 de Novembro de 2026  
@@ -12,11 +12,11 @@
 
 ## Sumário Executivo & Princípio Clean-Room
 
-Este dossiê detalha a engenharia reversa completa dos cinco pilares fundamentais da plataforma comercial do Chess.com. O propósito é fornecer aos engenheiros do nosso aplicativo de xadrez soberano (**Soberano Chess Mobile**) todas as fórmulas matemáticas, esquemas de dados, tabelas de calibração de inteligência artificial, especificações de rede e algoritmos de classificação necessários para implementar uma réplica livre, offline, de alta performance e sem paywalls utilizando **Rust** (`rust_core`) e **Flutter** (`lib/`).
+Este dossiê detalha a engenharia reversa completa dos cinco pilares fundamentais da plataforma comercial do Chess.com. O propósito é fornecer aos engenheiros do nosso aplicativo de xadrez chessD (**chessD**) todas as fórmulas matemáticas, esquemas de dados, tabelas de calibração de inteligência artificial, especificações de rede e algoritmos de classificação necessários para implementar uma réplica livre, offline, de alta performance e sem paywalls utilizando **Rust** (`rust_core`) e **Flutter** (`lib/`).
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                   MAPA DE CONVERSÃO REA → SOBERANO CHESS                    │
+│                   MAPA DE CONVERSÃO REA → CHESSD                    │
 ├──────────────────────────────────────┬──────────────────────────────────────┤
 │ 1. Puzzles & Formato TCN             │ Rust: `tcn_decoder.rs` & Zstd 16-bit │
 │ 2. Trilhas de Lições & Drills        │ Flutter: Árvore Duolingo + SQLite    │
@@ -259,7 +259,7 @@ O Chess.com utiliza duas engines em sua infraestrutura:
 1. **Stockfish NNUE:** Utilizado para Game Review, Análise Profunda e Nuvem.
 2. **Komodo / Komodo Dragon:** Utilizado prioritariamente para os **Bots de Personalidade** devido à sua capacidade nativa de modular estilos (`Aggressive`, `Solid`, `Positional`, `Contempt`, `Defensive`).
 
-No nosso aplicativo soberano, como operamos com o **Stockfish NNUE nativo em ARM64 Neon SIMD** no `rust_core`, calibramos o Stockfish para reproduzir fielmente tanto a força de jogo quanto a personalidade humana dos bots.
+No nosso aplicativo chessD, como operamos com o **Stockfish NNUE nativo em ARM64 Neon SIMD** no `rust_core`, calibramos o Stockfish para reproduzir fielmente tanto a força de jogo quanto a personalidade humana dos bots.
 
 ### 3.1. Parâmetros UCI Oficiais do Stockfish
 - `UCI_LimitStrength`: Ativa o limitador de Elo (`true` / `false`).
@@ -276,7 +276,7 @@ Internamente, quando `Skill Level < 20`, o Stockfish:
    $$P(m_i) = \frac{e^{V_{\text{ruído}}(m_i) / T}}{\sum_j e^{V_{\text{ruído}}(m_j) / T}}$$
    Onde $T$ é a temperatura de amostragem estocástica.
 
-### 3.3. Tabela Canônica de Calibração: Bots Soberanos (Elo 250 a 2800)
+### 3.3. Tabela Canônica de Calibração: Bots chessDs (Elo 250 a 2800)
 
 | Persona / Nível | Elo Alvo | Stockfish `Skill Level` | Profundidade Máx (`depth`) | Limite de Nós (`nodes`) | Taxa de Gafes (`blunder_rate`) | Taxa de Imprecisão | Desprezo (`Contempt`) |
 |---|---|---|---|---|---|---|---|
@@ -539,4 +539,4 @@ Para consolidar as descobertas deste dossiê na nossa arquitetura limpa sem qual
 
 ## Conclusão da Perícia
 
-Com as especificações, equações e tabelas de calibração descritas neste dossiê, nossa equipe de engenharia dispõe de **todas as fundações matemáticas e técnicas necessárias** para construir o motor analítico, as lições e a jogabilidade dos bots no **Soberano Chess Mobile**, garantindo uma experiência superior à da plataforma comercial, com soberania total, ausência de custos e operação 100% offline.
+Com as especificações, equações e tabelas de calibração descritas neste dossiê, nossa equipe de engenharia dispõe de **todas as fundações matemáticas e técnicas necessárias** para construir o motor analítico, as lições e a jogabilidade dos bots no **chessD**, garantindo uma experiência superior à da plataforma comercial, com autonomia total, ausência de custos e operação 100% offline.

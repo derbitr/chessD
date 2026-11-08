@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soberano_chess/main.dart';
+import 'package:chess_d/main.dart';
 
 void main() {
   testWidgets('ChessDApp inicializa e renderiza tela principal com todos os modos', (WidgetTester tester) async {
