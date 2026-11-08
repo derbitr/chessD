@@ -4,6 +4,8 @@ import 'package:chess_d/data/repositories/puzzle_repository.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 import '../board/chess_board_widget.dart';
 
 class InfinitePuzzlesScreen extends StatefulWidget {
@@ -160,36 +162,27 @@ class _InfinitePuzzlesScreenState extends State<InfinitePuzzlesScreen> {
 
               const SizedBox(height: 16),
 
-              // Feedback Banner
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: isSolved
-                      ? AppColors.accentEmerald.withOpacity(0.15)
-                      : isFailed
-                          ? AppColors.moveBlunder.withOpacity(0.15)
-                          : AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSolved
-                        ? AppColors.accentEmerald
-                        : isFailed
-                            ? AppColors.moveBlunder
-                            : AppColors.surfaceElevated,
-                  ),
-                ),
-                child: Text(
-                  feedbackText,
-                  style: AppTypography.titleMedium.copyWith(
-                    color: isSolved
-                        ? AppColors.accentEmerald
-                        : isFailed
-                            ? AppColors.moveBlunder
-                            : AppColors.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+              // Balão de Feedback no Padrão Chess.com
+              ChessBalloonCard(
+                type: isSolved
+                    ? BalloonType.success
+                    : isFailed
+                        ? BalloonType.error
+                        : BalloonType.neutral,
+                tail: BubbleTail.bottom,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                avatar: isSolved
+                    ? const Icon(Icons.check_circle, color: AppColors.accentEmerald, size: 24)
+                    : isFailed
+                        ? const Icon(Icons.cancel, color: AppColors.moveBlunder, size: 24)
+                        : const PawnLogo(size: 22, color: AppColors.primaryCyan, hasBadge: false),
+                title: isSolved
+                    ? 'Excelente Resolução!'
+                    : isFailed
+                        ? 'Tentativa Incorreta'
+                        : 'Sua Vez de Jogar',
+                message: feedbackText,
               ),
 
               const SizedBox(height: 16),

@@ -4,6 +4,7 @@ import 'package:chess_d/services/wifi_cast_server.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
 import 'package:chess_d/ui/core/chess_theme.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 import 'package:chess_d/ui/features/board/coordinate_trainer.dart';
 import 'package:chess_d/ui/features/board/pass_and_play_screen.dart';
 import 'package:chess_d/ui/features/game/bot_game_screen.dart';
@@ -98,8 +99,8 @@ class _MainHubScreenState extends State<MainHubScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Icon(Icons.shield, color: ThemeController.instance.accentColor, size: 24),
-            const SizedBox(width: 8),
+            PawnLogo(size: 26, color: ThemeController.instance.accentColor, hasBadge: true),
+            const SizedBox(width: 10),
             Text(
               'chessD',
               style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.5),
@@ -183,7 +184,9 @@ class _MainHubScreenState extends State<MainHubScreen> {
                       color: AppColors.primaryCyan.withOpacity(0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.memory, color: AppColors.primaryCyan, size: 28),
+                    child: const Center(
+                      child: PawnLogo(size: 26, color: AppColors.primaryCyan, hasBadge: false),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -555,35 +558,63 @@ class _MainHubScreenState extends State<MainHubScreen> {
       onTap: isRustReady ? onTap : null,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: ThemeController.instance.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: ThemeController.instance.borderColor),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(ThemeController.instance.isDark ? 0.15 : 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
+                color: accentColor.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: accentColor.withOpacity(0.25), width: 1),
               ),
-              child: Icon(icon, color: accentColor, size: 24),
+              child: Center(
+                child: Icon(icon, color: accentColor, size: 24),
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(title, style: AppTypography.titleMedium.copyWith(color: ThemeController.instance.textPrimary)),
+                  Text(
+                    title,
+                    style: AppTypography.titleMedium.copyWith(
+                      color: ThemeController.instance.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: AppTypography.bodyMedium.copyWith(color: ThemeController.instance.textSecondary)),
+                  Text(
+                    subtitle,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: ThemeController.instance.textSecondary,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textMuted),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right, color: ThemeController.instance.textSecondary.withOpacity(0.5), size: 22),
           ],
         ),
       ),

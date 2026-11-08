@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 import '../board/chess_board_widget.dart';
 import '../analysis/game_review_screen.dart';
 
@@ -129,46 +131,102 @@ class _BotGameScreenState extends State<BotGameScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Status do Bot
+            // Header do Adversário (Bot) no Padrão Chess.com
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               color: AppColors.surface,
               child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: AppColors.surfaceElevated,
-                    child: const Icon(Icons.smart_toy, color: AppColors.primaryCyan),
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryCyan.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.primaryCyan.withOpacity(0.4)),
+                    ),
+                    child: const Icon(Icons.smart_toy, color: AppColors.primaryCyan, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.botName, style: AppTypography.titleMedium),
-                        Text(
-                          isBotThinking ? 'Analisando variantes...' : 'Aguardando seu lance',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isBotThinking ? AppColors.secondaryAmber : AppColors.textSecondary,
-                            fontStyle: isBotThinking ? FontStyle.italic : FontStyle.normal,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryCyan,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'BOT',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 10,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                widget.botName,
+                                style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceElevated,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${widget.botElo}',
+                                style: const TextStyle(
+                                  color: AppColors.primaryCyan,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isBotThinking ? 'Analisando variantes...' : 'Aguardando lance',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isBotThinking ? AppColors.secondaryAmber : AppColors.textSecondary,
+                                fontStyle: isBotThinking ? FontStyle.italic : FontStyle.normal,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                   if (isBotThinking)
                     const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryCyan),
-                    ),
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.primaryCyan),
+                    )
+                  else
+                    const Icon(Icons.check_circle_outline, color: AppColors.accentEmerald, size: 20),
                 ],
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
-            // Tabuleiro Interativo
+            // Tabuleiro Interativo Padronizado
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: ChessBoardWidget(
@@ -179,24 +237,113 @@ class _BotGameScreenState extends State<BotGameScreen> {
               ),
             ),
 
-            if (gameOutcome != null) ...[
-              Container(
-                margin: const EdgeInsets.all(12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceElevated,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.secondaryAmber),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      gameOutcome!,
-                      style: AppTypography.titleMedium.copyWith(color: AppColors.secondaryAmber),
-                      textAlign: TextAlign.center,
+            const SizedBox(height: 8),
+
+            // Header do Jogador Humano (Você) no Padrão Chess.com
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              color: AppColors.surface,
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryAmber.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.secondaryAmber.withOpacity(0.4)),
                     ),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
+                    child: const Center(
+                      child: PawnLogo(size: 24, color: AppColors.secondaryAmber, hasBadge: false),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.secondaryAmber,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'VOCÊ',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 10,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Jogador',
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceElevated,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                '1500',
+                                style: TextStyle(
+                                  color: AppColors.secondaryAmber,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              !isBotThinking && gameOutcome == null ? 'Sua vez de jogar' : 'Esperando oponente',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: !isBotThinking && gameOutcome == null ? AppColors.accentEmerald : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!isBotThinking && gameOutcome == null)
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: AppColors.accentEmerald,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            if (gameOutcome != null) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                child: ChessBalloonCard(
+                  type: BalloonType.hint,
+                  tail: BubbleTail.top,
+                  avatar: const Icon(Icons.emoji_events, color: AppColors.secondaryAmber, size: 28),
+                  title: 'Fim de Jogo',
+                  message: gameOutcome!,
+                  action: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -209,15 +356,21 @@ class _BotGameScreenState extends State<BotGameScreen> {
                         );
                       },
                       icon: const Icon(Icons.analytics, color: Colors.black),
-                      label: const Text('REVISAR PARTIDA COM COACH IA', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryCyan),
+                      label: const Text(
+                        'REVISAR PARTIDA COM COACH IA',
+                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryCyan,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
 
             // Histórico Rápido de Lances
             Expanded(

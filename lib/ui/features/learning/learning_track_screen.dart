@@ -3,6 +3,8 @@ import 'package:chess_d/data/models/lesson_module.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 import '../board/chess_board_widget.dart';
 
 class LearningTrackScreen extends StatefulWidget {
@@ -237,57 +239,107 @@ class _LessonBottomSheetState extends State<_LessonBottomSheet> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.textMuted,
-              borderRadius: BorderRadius.circular(2),
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.textMuted.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          Text(widget.step.title, style: AppTypography.displayMedium),
-          const SizedBox(height: 12),
+          Row(
+            children: [
+              const PawnLogo(size: 26, color: AppColors.secondaryAmber, hasBadge: true),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.step.title,
+                  style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
 
           if (isTheoryPhase) ...[
-            Text(widget.step.shortTheory, style: AppTypography.bodyLarge),
-            const SizedBox(height: 24),
+            ChessBalloonCard(
+              type: BalloonType.coach,
+              tail: BubbleTail.top,
+              avatar: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryCyan.withOpacity(0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.menu_book, color: AppColors.primaryCyan, size: 18),
+              ),
+              title: 'Fundamento Teórico',
+              message: widget.step.shortTheory,
+            ),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
+              height: 52,
+              child: ElevatedButton.icon(
                 onPressed: () {
                   setState(() {
                     isTheoryPhase = false;
                   });
                 },
+                icon: const Icon(Icons.play_arrow, color: Colors.black),
+                label: const Text(
+                  'COMEÇAR EXERCÍCIOS PRÁTICOS',
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryCyan,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('COMEÇAR EXERCÍCIOS PRÁTICOS', style: AppTypography.labelLarge),
               ),
             ),
           ] else if (currentEx != null) ...[
             // Barra de progresso dos exercícios
-            LinearProgressIndicator(
-              value: (currentExerciseIdx + 1) / exercises.length,
-              backgroundColor: AppColors.surfaceElevated,
-              color: AppColors.accentEmerald,
-              minHeight: 6,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: (currentExerciseIdx + 1) / exercises.length,
+                backgroundColor: AppColors.surfaceElevated,
+                color: AppColors.accentEmerald,
+                minHeight: 6,
+              ),
             ),
             const SizedBox(height: 12),
-            Text(currentEx.instruction, style: AppTypography.bodyLarge),
-            const SizedBox(height: 12),
+            ChessBalloonCard(
+              type: BalloonType.neutral,
+              margin: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              avatar: const Icon(Icons.flag, color: AppColors.accentEmerald, size: 20),
+              title: 'Desafio ${currentExerciseIdx + 1} de ${exercises.length}',
+              message: currentEx.instruction,
+            ),
+            const SizedBox(height: 14),
             ChessBoardWidget(
               ffi: widget.ffi,
               game: _exGame,
               onMovePlayed: _onMovePlayed,
             ),
             const SizedBox(height: 12),
-            Text('Dica: ${currentEx.hint}', style: AppTypography.bodyMedium),
+            ChessBalloonCard(
+              type: BalloonType.hint,
+              tail: BubbleTail.bottom,
+              margin: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              avatar: const Icon(Icons.lightbulb, color: AppColors.secondaryAmber, size: 20),
+              title: 'Dica do Mestre',
+              message: currentEx.hint,
+            ),
           ],
         ],
       ),

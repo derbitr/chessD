@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 
 class ShareCardScreen extends StatefulWidget {
   final double whiteAccuracy;
@@ -108,14 +109,7 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                           Expanded(
                             child: Row(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.secondaryAmber.withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.shield, color: AppColors.secondaryAmber, size: 24),
-                                ),
+                                const PawnLogo(size: 32, color: AppColors.secondaryAmber, hasBadge: true),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(

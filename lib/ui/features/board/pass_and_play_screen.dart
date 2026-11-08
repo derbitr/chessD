@@ -5,6 +5,8 @@ import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
 import 'package:chess_d/ui/core/chess_theme.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 import 'chess_board_widget.dart';
 
 class PassAndPlayScreen extends StatefulWidget {
@@ -171,37 +173,94 @@ class _PassAndPlayScreenState extends State<PassAndPlayScreen> {
           body: SafeArea(
             child: Column(
               children: [
-                // Relógio das Pretas (Invertido para o jogador do topo)
-                Expanded(
-                  flex: 1,
-                  child: RotatedBox(
-                    quarterTurns: 2,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: currentTurn == 'black' ? theme.surfaceElevatedColor : theme.surfaceColor,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: currentTurn == 'black' ? theme.accentColor : theme.borderColor,
-                          width: 2,
-                        ),
+                // Painel Padronizado das Pretas (Invertido para o jogador oposto)
+                RotatedBox(
+                  quarterTurns: 2,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: currentTurn == 'black' ? theme.surfaceElevatedColor : theme.surfaceColor,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: currentTurn == 'black' ? theme.accentColor : theme.borderColor,
+                        width: 1.5,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(bName.toUpperCase(), style: AppTypography.titleMedium.copyWith(color: theme.textPrimary)),
-                          Text(
+                      boxShadow: currentTurn == 'black'
+                          ? [
+                              BoxShadow(
+                                color: theme.accentColor.withOpacity(0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: const Center(
+                                child: Text('♟', style: TextStyle(fontSize: 22, color: Colors.white)),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  bName.toUpperCase(),
+                                  style: AppTypography.titleMedium.copyWith(
+                                    color: theme.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  currentTurn == 'black' ? 'Vez de Jogar' : 'Aguardando',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: currentTurn == 'black' ? theme.accentColor : theme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: blackTimeMillis < 10000 ? AppColors.moveBlunder : Colors.white12,
+                            ),
+                          ),
+                          child: Text(
                             _formatClock(blackTimeMillis),
-                            style: AppTypography.displayLarge.copyWith(
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
                               color: blackTimeMillis < 10000 ? AppColors.moveBlunder : theme.textPrimary,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
+
+                const SizedBox(height: 4),
 
                 // Tabuleiro Central
                 Padding(
@@ -214,56 +273,117 @@ class _PassAndPlayScreenState extends State<PassAndPlayScreen> {
                   ),
                 ),
 
+                const SizedBox(height: 4),
+
                 if (outcomeText != null) ...[
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      outcomeText!,
-                      style: AppTypography.titleLarge.copyWith(color: theme.accentColor),
-                      textAlign: TextAlign.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: ChessBalloonCard(
+                      type: BalloonType.success,
+                      tail: BubbleTail.bottom,
+                      avatar: const Icon(Icons.emoji_events, color: AppColors.secondaryAmber, size: 24),
+                      title: 'Fim de Jogo',
+                      message: outcomeText!,
+                      action: finalResult != null
+                          ? SizedBox(
+                              width: double.infinity,
+                              height: 44,
+                              child: ElevatedButton.icon(
+                                onPressed: () => Navigator.of(context).pop(finalResult),
+                                icon: const Icon(Icons.check_circle_outline, color: Colors.black),
+                                label: Text(
+                                  'Salvar Resultado ($finalResult)',
+                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                                ),
+                                style: ElevatedButton.styleFrom(backgroundColor: theme.accentColor),
+                              ),
+                            )
+                          : null,
                     ),
                   ),
-                  if (finalResult != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: ElevatedButton.icon(
-                        onPressed: () => Navigator.of(context).pop(finalResult),
-                        icon: const Icon(Icons.check_circle_outline, color: Colors.black),
-                        label: Text(
-                          'Salvar Resultado ($finalResult)',
-                          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                        ),
-                        style: ElevatedButton.styleFrom(backgroundColor: theme.accentColor),
-                      ),
-                    ),
                 ],
 
-                // Relógio das Brancas (Jogador de baixo)
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: currentTurn == 'white' ? theme.surfaceElevatedColor : theme.surfaceColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: currentTurn == 'white' ? theme.accentColor : theme.borderColor,
-                        width: 2,
-                      ),
+                // Painel Padronizado das Brancas (Jogador inferior)
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: currentTurn == 'white' ? theme.surfaceElevatedColor : theme.surfaceColor,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: currentTurn == 'white' ? theme.accentColor : theme.borderColor,
+                      width: 1.5,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(wName.toUpperCase(), style: AppTypography.titleMedium.copyWith(color: theme.textPrimary)),
-                        Text(
+                    boxShadow: currentTurn == 'white'
+                        ? [
+                            BoxShadow(
+                              color: theme.accentColor.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.white38),
+                            ),
+                            child: const Center(
+                              child: PawnLogo(size: 22, color: Colors.white, hasBadge: false),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                wName.toUpperCase(),
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: theme.textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                currentTurn == 'white' ? 'Vez de Jogar' : 'Aguardando',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: currentTurn == 'white' ? theme.accentColor : theme.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: whiteTimeMillis < 10000 ? AppColors.moveBlunder : Colors.white12,
+                          ),
+                        ),
+                        child: Text(
                           _formatClock(whiteTimeMillis),
-                          style: AppTypography.displayLarge.copyWith(
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
                             color: whiteTimeMillis < 10000 ? AppColors.moveBlunder : theme.textPrimary,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],

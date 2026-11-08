@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 import 'bot_game_screen.dart';
 
 class BotStudioScreen extends StatefulWidget {
@@ -57,7 +59,7 @@ class _BotStudioScreenState extends State<BotStudioScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Avatar & Nome do Bot
+              // Avatar Padronizado & Perfil do Bot no Estilo Chess.com
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -67,25 +69,70 @@ class _BotStudioScreenState extends State<BotStudioScreen> {
                 ),
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: AppColors.primaryCyan.withOpacity(0.15),
-                      child: const Icon(Icons.smart_toy, size: 48, color: AppColors.primaryCyan),
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primaryCyan.withOpacity(0.25),
+                                AppColors.primaryCyan.withOpacity(0.08),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.primaryCyan.withOpacity(0.5), width: 2),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.smart_toy, size: 44, color: AppColors.primaryCyan),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryCyan,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'BOT',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _nameController,
-                      style: AppTypography.titleLarge,
+                      style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Nome do Bot',
-                        labelStyle: TextStyle(color: AppColors.textSecondary),
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        labelStyle: const TextStyle(color: AppColors.textSecondary),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                     ),
                   ],
                 ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Balão de Fala do Bot
+              ChessBalloonCard(
+                type: BalloonType.coach,
+                tail: BubbleTail.top,
+                avatar: const PawnLogo(size: 20, color: AppColors.primaryCyan, hasBadge: false),
+                title: 'Desafio do Bot',
+                message: 'Configure meu nível de cálculo e estilo tático abaixo. Estou calibrado para jogar partidas competitivas!',
               ),
 
               const SizedBox(height: 20),

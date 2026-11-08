@@ -4,6 +4,8 @@ import 'package:chess_d/data/repositories/puzzle_repository.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 import '../board/chess_board_widget.dart';
 
 class PuzzleLadderScreen extends StatefulWidget {
@@ -192,24 +194,23 @@ class _PuzzleLadderScreenState extends State<PuzzleLadderScreen> {
 
               const SizedBox(height: 14),
 
-              // Feedback Banner
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: isGameOver ? AppColors.moveBlunder.withOpacity(0.15) : AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isGameOver ? AppColors.moveBlunder : AppColors.surfaceElevated,
-                  ),
-                ),
-                child: Text(
-                  feedbackText,
-                  style: AppTypography.titleMedium.copyWith(
-                    color: isGameOver ? AppColors.moveBlunder : AppColors.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+              // Balão de Feedback no Padrão Chess.com
+              ChessBalloonCard(
+                type: isGameOver
+                    ? BalloonType.error
+                    : (streak > 0 ? BalloonType.success : BalloonType.neutral),
+                tail: BubbleTail.bottom,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                avatar: isGameOver
+                    ? const Icon(Icons.heart_broken, color: AppColors.moveBlunder, size: 24)
+                    : (streak > 0
+                        ? const Icon(Icons.local_fire_department, color: Colors.orange, size: 24)
+                        : const PawnLogo(size: 22, color: AppColors.secondaryAmber, hasBadge: false)),
+                title: isGameOver
+                    ? 'Fim de Corrida'
+                    : 'Problema ${currentIdx + 1}',
+                message: feedbackText,
               ),
 
               const SizedBox(height: 14),

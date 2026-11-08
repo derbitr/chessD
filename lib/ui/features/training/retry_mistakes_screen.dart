@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
+import 'package:chess_d/ui/core/pawn_logo.dart';
 import '../board/chess_board_widget.dart';
 
 class RetryMistakesScreen extends StatefulWidget {
@@ -172,29 +174,17 @@ class _RetryMistakesScreenState extends State<RetryMistakesScreen> {
 
               const SizedBox(height: 12),
 
-              // Feedback do Treinador
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: feedbackColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: feedbackColor.withOpacity(0.4)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isCompleted ? Icons.check_circle : Icons.replay,
-                      color: feedbackColor,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        feedbackText,
-                        style: AppTypography.bodyMedium.copyWith(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
+              // Balão de Feedback no Padrão Chess.com
+              ChessBalloonCard(
+                type: isCompleted ? BalloonType.success : BalloonType.coach,
+                tail: BubbleTail.top,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                avatar: isCompleted
+                    ? const Icon(Icons.check_circle, color: AppColors.accentEmerald, size: 24)
+                    : const PawnLogo(size: 22, color: AppColors.secondaryAmber, hasBadge: false),
+                title: isCompleted ? 'Erro Superado!' : 'Treinador de Erros',
+                message: feedbackText,
               ),
 
               const SizedBox(height: 16),

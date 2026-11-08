@@ -462,14 +462,22 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                     final res = pair['result'] as String?;
 
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: theme.surfaceColor,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: res != null ? theme.borderColor : theme.accentColor.withOpacity(0.4),
+                          width: res != null ? 1 : 1.5,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(theme.isDark ? 0.2 : 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Column(
                         children: [
@@ -480,19 +488,26 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                                 child: Row(
                                   children: [
                                     Container(
-                                      width: 12,
-                                      height: 12,
+                                      width: 28,
+                                      height: 28,
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.black54),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.black26),
+                                      ),
+                                      child: const Center(
+                                        child: Text('♙', style: TextStyle(fontSize: 16, color: Colors.black87)),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         whiteName,
-                                        style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                          color: theme.textPrimary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -500,14 +515,16 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                                 ),
                               ),
 
-                              // Placar / Resultado
+                              // Placar / Resultado Central
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                margin: const EdgeInsets.symmetric(horizontal: 6),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: theme.surfaceElevatedColor,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: res != null ? AppColors.accentEmerald : AppColors.secondaryAmber,
+                                    width: 1.5,
                                   ),
                                 ),
                                 child: Text(
@@ -515,6 +532,7 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                                   style: TextStyle(
                                     color: res != null ? AppColors.accentEmerald : AppColors.secondaryAmber,
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 13,
                                   ),
                                 ),
                               ),
@@ -528,18 +546,25 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                                       child: Text(
                                         blackName,
                                         textAlign: TextAlign.right,
-                                        style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                          color: theme.textPrimary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
                                     Container(
-                                      width: 12,
-                                      height: 12,
+                                      width: 28,
+                                      height: 28,
                                       decoration: BoxDecoration(
-                                        color: Colors.black87,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white54),
+                                        color: const Color(0xFF262421),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.white30),
+                                      ),
+                                      child: const Center(
+                                        child: Text('♟', style: TextStyle(fontSize: 16, color: Colors.white)),
                                       ),
                                     ),
                                   ],
@@ -551,8 +576,11 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                           const SizedBox(height: 10),
 
                           // Barra de Ações: Jogar Tabuleiro, Jogar Online P2P ou Menu Rápido
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                          Wrap(
+                            alignment: WrapAlignment.end,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
                             children: [
                               // Botão Tabuleiro Local (Pass & Play)
                               TextButton.icon(
@@ -560,12 +588,12 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                                 icon: Icon(Icons.grid_on, size: 16, color: theme.accentColor),
                                 label: Text('Tabuleiro Local', style: TextStyle(color: theme.accentColor, fontSize: 12)),
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  backgroundColor: theme.accentColor.withOpacity(0.08),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                   visualDensity: VisualDensity.compact,
                                 ),
                               ),
-
-                              const SizedBox(width: 4),
 
                               // Botão Online P2P Multiplayer
                               TextButton.icon(
@@ -573,16 +601,16 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                                 icon: const Icon(Icons.wifi, size: 16, color: AppColors.secondaryAmber),
                                 label: const Text('Online P2P', style: TextStyle(color: AppColors.secondaryAmber, fontSize: 12)),
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  backgroundColor: AppColors.secondaryAmber.withOpacity(0.08),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                   visualDensity: VisualDensity.compact,
                                 ),
                               ),
 
-                              const SizedBox(width: 4),
-
                               // Menu Rápido Manual
                               PopupMenuButton<String>(
-                                icon: Icon(Icons.edit_note, color: theme.textSecondary, size: 20),
+                                icon: Icon(Icons.edit_note, color: theme.textSecondary, size: 22),
                                 tooltip: 'Registrar Placar Manualmente',
                                 onSelected: (val) => _recordResult(idx, val),
                                 itemBuilder: (_) => [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
 import 'share_card_generator.dart';
 
 class GameReviewScreen extends StatefulWidget {
@@ -300,83 +301,72 @@ class _GameReviewScreenState extends State<GameReviewScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Explicação do Coach IA em Português
+                  // Balão de Explicação do Coach IA no Estilo Chess.com
                   if (moveAnalyses.isNotEmpty && selectedMoveIdx < moveAnalyses.length) ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceElevated,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.primaryCyan.withOpacity(0.5)),
+                    ChessBalloonCard(
+                      type: BalloonType.coach,
+                      tail: BubbleTail.top,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      avatar: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: AppColors.accentEmerald.withOpacity(0.18),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.accentEmerald, width: 1.5),
+                        ),
+                        child: const Icon(Icons.psychology, color: AppColors.accentEmerald, size: 22),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      title: 'Treinador IA • Lance ${selectedMoveIdx + 1}',
+                      badge: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _getBadgeColor(moveAnalyses[selectedMoveIdx]['category'] as String),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${moveAnalyses[selectedMoveIdx]['category']} ${_getBadgeSymbol(moveAnalyses[selectedMoveIdx]['category'] as String)}',
+                          style: AppTypography.labelLarge.copyWith(color: Colors.black, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      message: moveAnalyses[selectedMoveIdx]['explanation'] as String,
+                      action: Row(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: AppColors.primaryCyan.withOpacity(0.15),
-                                      radius: 16,
-                                      child: const Icon(Icons.school, color: AppColors.primaryCyan, size: 18),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.white12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.compare_arrows, size: 16, color: AppColors.primaryCyan),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Jogado: ${moveAnalyses[selectedMoveIdx]['played_uci']} • Melhor: ${moveAnalyses[selectedMoveIdx]['best_uci']}',
+                                      style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        'Treinador IA (Lance ${selectedMoveIdx + 1})',
-                                        style: AppTypography.titleMedium,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: _getBadgeColor(moveAnalyses[selectedMoveIdx]['category'] as String),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  '${moveAnalyses[selectedMoveIdx]['category']} ${_getBadgeSymbol(moveAnalyses[selectedMoveIdx]['category'] as String)}',
-                                  style: AppTypography.labelLarge.copyWith(color: Colors.black),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            moveAnalyses[selectedMoveIdx]['explanation'] as String,
-                            style: AppTypography.bodyLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Lance Jogado: ${moveAnalyses[selectedMoveIdx]['played_uci']} | Melhor: ${moveAnalyses[selectedMoveIdx]['best_uci']}',
-                                  style: AppTypography.bodyMedium,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  isVoicePlaying ? Icons.volume_up : Icons.volume_up_outlined,
-                                  color: AppColors.primaryCyan,
-                                ),
-                                tooltip: 'Ouvir Comentário Falado',
-                                onPressed: () {
-                                  setState(() {
-                                    isVoicePlaying = !isVoicePlaying;
-                                  });
-                                },
-                              ),
-                            ],
+                          const SizedBox(width: 10),
+                          IconButton(
+                            icon: Icon(
+                              isVoicePlaying ? Icons.volume_up : Icons.volume_up_outlined,
+                              color: AppColors.primaryCyan,
+                            ),
+                            tooltip: 'Ouvir Comentário Falado',
+                            onPressed: () {
+                              setState(() {
+                                isVoicePlaying = !isVoicePlaying;
+                              });
+                            },
                           ),
                         ],
                       ),
