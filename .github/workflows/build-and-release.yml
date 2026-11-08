@@ -1,0 +1,143 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "ndk;26.1.10909125"
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: Build Rust Core Libraries for Android
+        run: |
+          export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125
+          mkdir -p android/app/src/main/jniLibs/arm64-v8a
+          mkdir -p android/app/src/main/jniLibs/armeabi-v7a
+          mkdir -p android/app/src/main/jniLibs/x86_64
+          cd rust_core
+          cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs build --release
+          cargo ndk -t armeabi-v7a -o ../android/app/src/main/jniLibs build --release
+          cargo ndk -t x86_64 -o ../android/app/src/main/jniLibs build --release
+          cd ..
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.3'
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Rename and Stage APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk soberano-chess-v1.0.0-android.apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soberano-chess-android-apk
+          path: soberano-chess-v1.0.0-android.apk
+
+  build-windows:
+    name: Build Windows x64 Executable
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust Core DLL
+        run: |
+          cd rust_core
+          cargo build --release
+          cd ..
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.3'
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Windows Application
+        run: flutter build windows --release
+
+      - name: Package Windows Release Bundle
+        run: |
+          Copy-Item "rust_core\target\release\rust_core.dll" -Destination "build\windows\x64\runner\Release\rust_core.dll" -Force
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "soberano-chess-v1.0.0-windows-x64.zip" -Force
+
+      - name: Upload Windows Bundle Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soberano-chess-windows-bundle
+          path: soberano-chess-v1.0.0-windows-x64.zip
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-android, build-windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: soberano-chess-android-apk
+          path: ./release-assets
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: soberano-chess-windows-bundle
+          path: ./release-assets
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./release-assets/soberano-chess-v1.0.0-android.apk
+            ./release-assets/soberano-chess-v1.0.0-windows-x64.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
