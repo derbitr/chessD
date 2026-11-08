@@ -117,15 +117,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Torneios (Sistema Suíço FIDE)'), findsOneWidget);
+      expect(find.text('Torneios Suíços'), findsOneWidget);
       expect(find.text('CLASSIFICAÇÃO GERAL'), findsOneWidget);
-      expect(find.text('Magnus'), findsWidgets);
+      expect(find.text('O Ornitólogo'), findsWidgets);
 
       // Clica em EMPARCEIRAR para gerar a Rodada 1
       await tester.tap(find.text('EMPARCEIRAR'));
       await tester.pumpAndSettle();
 
       expect(find.text('RODADA 1'), findsOneWidget);
+      expect(find.text('Jogar contra Bot'), findsWidgets);
       expect(find.text('Tabuleiro Local'), findsWidgets);
       expect(find.text('Online P2P'), findsWidgets);
     });

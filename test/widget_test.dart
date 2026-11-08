@@ -12,22 +12,38 @@ void main() {
     await tester.pumpWidget(const ChessDApp());
     await tester.pumpAndSettle();
 
+    // Valida Header e Identidade Visual
     expect(find.text('chessD'), findsOneWidget);
-    expect(find.text('Trilha de Maestria (Estilo Duolingo)'), findsOneWidget);
-    expect(find.text('Quebra-Cabeças Infinitos'), findsOneWidget);
-    expect(find.text('Escada de Problemas (Rush 3 Vidas)'), findsOneWidget);
-    expect(find.text('Revisão de Partida & Coach IA'), findsOneWidget);
-    expect(find.text('Partida contra Bots'), findsOneWidget);
-    expect(find.text('Pass & Play (2 Jogadores)'), findsOneWidget);
-    expect(find.text('Treinador de Repertório (SM-2)'), findsOneWidget);
-    expect(find.text('Explorador de Aberturas (ECO)'), findsOneWidget);
-    expect(find.text('Treino de Erros Próprios'), findsOneWidget);
-    expect(find.text('Estúdio de Criação de Bots'), findsOneWidget);
-    expect(find.text('Torneios Locais (Sistema Suíço)'), findsOneWidget);
+
+    // Valida BottomNavigationBar com 5 abas estilo Chess.com
+    expect(find.text('Início'), findsOneWidget);
+    expect(find.text('Problemas'), findsWidgets);
+    expect(find.text('Aprender'), findsOneWidget);
+    expect(find.text('Assistir'), findsOneWidget);
+    expect(find.text('Mais'), findsOneWidget);
+
+    // Valida CTA Verde Canônico "Jogar" e Cards Iniciais
+    expect(find.text('Jogar'), findsWidgets);
+    expect(find.text('Problema Diário'), findsOneWidget);
+    expect(find.text('Jogar com Bots'), findsWidgets);
+    expect(find.text('O Ornitólogo'), findsOneWidget);
+    expect(find.text('O Trilheiro'), findsOneWidget);
+
+    // Valida navegação entre as abas
+    await tester.tap(find.text('Problemas').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Aprender'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Assistir'));
+    await tester.pumpAndSettle();
     expect(find.text('Perícia Forense Anti-Cheat'), findsOneWidget);
-    expect(find.text('Acervo Offline & Wi-Fi Cast'), findsOneWidget);
-    expect(find.text('Personalização Visual & Paletas'), findsOneWidget);
-    expect(find.text('Multiplayer Online P2P (Custo Zero)'), findsOneWidget);
-    expect(find.text('Central de Ajuda & Guia chessD'), findsOneWidget);
+
+    await tester.tap(find.text('Mais'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Torneios (Sistema Suíço FIDE)'), findsOneWidget);
+    expect(find.text('Estúdio de Criação de Bots'), findsOneWidget);
   });
 }

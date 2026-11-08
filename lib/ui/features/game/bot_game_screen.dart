@@ -14,6 +14,8 @@ class BotGameScreen extends StatefulWidget {
   final int botElo;
   final int botPersonality; // 0 = classical, 1 = aggressive, 2 = positional
   final String botName;
+  final bool playerIsWhite;
+  final Function(String result)? onGameConcluded;
 
   const BotGameScreen({
     super.key,
@@ -21,6 +23,8 @@ class BotGameScreen extends StatefulWidget {
     this.botElo = 1200,
     this.botPersonality = 1,
     this.botName = 'Valkyrie (Agressiva)',
+    this.playerIsWhite = true,
+    this.onGameConcluded,
   });
 
   @override
@@ -32,18 +36,38 @@ class _BotGameScreenState extends State<BotGameScreen> {
   bool isBotThinking = false;
   bool showHeatmap = false;
   String? gameOutcome;
+  String? finalResult;
   List<String> moveHistory = [];
 
   @override
   void initState() {
     super.initState();
     _game = widget.ffi.newGame();
+    if (!widget.playerIsWhite) {
+      _triggerBotMove();
+    }
   }
 
   @override
   void dispose() {
     widget.ffi.freeGame(_game);
     super.dispose();
+  }
+
+  void _handleGameOver(Map<String, dynamic> status) {
+    final outcome = status['outcome'] as String? ?? '';
+    final reason = status['termination_reason'] as String? ?? '';
+    String res = '1/2-1/2';
+    if (outcome == 'WhiteWins') {
+      res = '1-0';
+    } else if (outcome == 'BlackWins') {
+      res = '0-1';
+    }
+    setState(() {
+      finalResult = res;
+      gameOutcome = 'Fim de Jogo ($res): $outcome ($reason)';
+    });
+    widget.onGameConcluded?.call(res);
   }
 
   void _onPlayerMove(String uci) {
@@ -53,9 +77,7 @@ class _BotGameScreenState extends State<BotGameScreen> {
 
     final status = widget.ffi.getStatus(_game);
     if (status['is_game_over'] == true) {
-      setState(() {
-        gameOutcome = 'Fim de Jogo: ${status['outcome']} (${status['termination_reason']})';
-      });
+      _handleGameOver(status);
       return;
     }
 
@@ -88,9 +110,7 @@ class _BotGameScreenState extends State<BotGameScreen> {
 
         final status = widget.ffi.getStatus(_game);
         if (status['is_game_over'] == true) {
-          setState(() {
-            gameOutcome = 'Fim de Jogo: ${status['outcome']} (${status['termination_reason']})';
-          });
+          _handleGameOver(status);
         }
       } else {
         setState(() {
@@ -340,31 +360,54 @@ class _BotGameScreenState extends State<BotGameScreen> {
                   avatar: const Icon(Icons.emoji_events, color: AppColors.secondaryAmber, size: 28),
                   title: 'Fim de Jogo',
                   message: gameOutcome!,
-                  action: SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => GameReviewScreen(
-                              ffi: widget.ffi,
-                              movesPlayedUci: moveHistory,
-                              playerColor: 'white',
+                  action: Column(
+                    children: [
+                      if (finalResult != null) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          height: 46,
+                          child: ElevatedButton.icon(
+                            onPressed: () => Navigator.of(context).pop(finalResult),
+                            icon: const Icon(Icons.check_circle, color: Colors.black),
+                            label: Text(
+                              'SALVAR RESULTADO ($finalResult)',
+                              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.accentEmerald,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                           ),
-                        );
-                      },
-                      icon: const Icon(Icons.analytics, color: Colors.black),
-                      label: const Text(
-                        'REVISAR PARTIDA COM COACH IA',
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => GameReviewScreen(
+                                  ffi: widget.ffi,
+                                  movesPlayedUci: moveHistory,
+                                  playerColor: 'white',
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.analytics, color: Colors.black),
+                          label: const Text(
+                            'REVISAR PARTIDA COM COACH IA',
+                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryCyan,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryCyan,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ),
