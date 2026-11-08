@@ -31,7 +31,7 @@ void main() {
 
       ctrl.setThemeMode(AppThemeMode.dark);
       expect(ctrl.isDark, isTrue);
-      expect(ctrl.scaffoldBackground, equals(const Color(0xFF0B0F17)));
+      expect(ctrl.scaffoldBackground, equals(const Color(0xFF262522)));
       expect(ctrl.toThemeData().brightness, equals(Brightness.dark));
     });
 

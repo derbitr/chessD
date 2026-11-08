@@ -197,12 +197,12 @@ class ThemeController extends ChangeNotifier {
   Color get blackPieceColor => _pieceTheme.blackColor;
   Color get accentColor => _accentTheme.color;
 
-  Color get scaffoldBackground => isDark ? const Color(0xFF0B0F17) : const Color(0xFFF8FAFC);
-  Color get surfaceColor => isDark ? const Color(0xFF151C28) : const Color(0xFFFFFFFF);
-  Color get surfaceElevatedColor => isDark ? const Color(0xFF1E2838) : const Color(0xFFF1F5F9);
-  Color get borderColor => isDark ? const Color(0xFF1E2838) : const Color(0xFFE2E8F0);
-  Color get textPrimary => isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
-  Color get textSecondary => isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+  Color get scaffoldBackground => isDark ? const Color(0xFF262522) : const Color(0xFFF8FAFC);
+  Color get surfaceColor => isDark ? const Color(0xFF2B2927) : const Color(0xFFFFFFFF);
+  Color get surfaceElevatedColor => isDark ? const Color(0xFF383634) : const Color(0xFFF1F5F9);
+  Color get borderColor => isDark ? const Color(0xFF383634) : const Color(0xFFE2E8F0);
+  Color get textPrimary => isDark ? const Color(0xFFF7F7F6) : const Color(0xFF0F172A);
+  Color get textSecondary => isDark ? const Color(0xFFA3A29E) : const Color(0xFF475569);
 
   void setThemeMode(AppThemeMode mode) {
     if (_themeMode != mode) {

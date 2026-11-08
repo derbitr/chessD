@@ -22,6 +22,54 @@ class _BotStudioScreenState extends State<BotStudioScreen> {
   final TextEditingController _nameController = TextEditingController(text: 'Gladiador Cibernético');
   double botElo = 1500;
   int personality = 1; // 0 = Classical, 1 = Aggressive, 2 = Positional
+  String _speechMessage = 'Configure meu nível de cálculo e estilo tático abaixo. Estou calibrado para jogar partidas competitivas!';
+
+  static const List<Map<String, dynamic>> _presets = [
+    {
+      'name': 'Marko',
+      'elo': 300,
+      'personality': 0,
+      'quote': 'Marko, com 300 de rating. Vamos ver que tipo de encrenca a gente vai arrumar.',
+      'category': 'Iniciante',
+    },
+    {
+      'name': 'Jamie',
+      'elo': 650,
+      'personality': 0,
+      'quote': 'Jamie, com 650 de rating. Vamos lá, me mostre o que você sabe.',
+      'category': 'Casual',
+    },
+    {
+      'name': 'Luna',
+      'elo': 1000,
+      'personality': 0,
+      'quote': 'Luna, com 1000 de rating. Preparado para um jogo estratégico?',
+      'category': 'Clube',
+    },
+    {
+      'name': 'Troy',
+      'elo': 1300,
+      'personality': 1,
+      'quote': 'Troy, com 1300 de rating. Vou testar a solidez da sua defesa.',
+      'category': 'Agressivo',
+    },
+    {
+      'name': 'TJ',
+      'elo': 1800,
+      'personality': 2,
+      'quote': 'TJ, com 1800 de rating. Sem espaço para erros nesta partida.',
+      'category': 'Mestre',
+    },
+  ];
+
+  void _selectPreset(Map<String, dynamic> preset) {
+    setState(() {
+      _nameController.text = preset['name'] as String;
+      botElo = (preset['elo'] as num).toDouble();
+      personality = preset['personality'] as int;
+      _speechMessage = preset['quote'] as String;
+    });
+  }
 
   @override
   void dispose() {
@@ -59,6 +107,77 @@ class _BotStudioScreenState extends State<BotStudioScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Carrossel de Bots Oficiais (Dossiê RPA Chess.com Tela 2)
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('ROBÔS OFICIAIS (PRESETS)', style: AppTypography.labelSmall),
+                  Text('Elo 300 a 1800', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _presets.map((bot) {
+                    final isSelected = _nameController.text == bot['name'];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: InkWell(
+                        onTap: () => _selectPreset(bot),
+                        borderRadius: BorderRadius.circular(16),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 110,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.accentEmerald.withOpacity(0.18) : AppColors.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected ? AppColors.accentEmerald : AppColors.surfaceElevated,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceElevated,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Center(
+                                  child: Icon(Icons.smart_toy, size: 22, color: AppColors.primaryCyan),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                bot['name'] as String,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${bot['elo']} Elo',
+                                style: TextStyle(
+                                  color: isSelected ? AppColors.accentEmerald : AppColors.textSecondary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
               // Avatar Padronizado & Perfil do Bot no Estilo Chess.com
               Container(
                 padding: const EdgeInsets.all(20),
@@ -132,7 +251,7 @@ class _BotStudioScreenState extends State<BotStudioScreen> {
                 tail: BubbleTail.top,
                 avatar: const PawnLogo(size: 20, color: AppColors.primaryCyan, hasBadge: false),
                 title: 'Desafio do Bot',
-                message: 'Configure meu nível de cálculo e estilo tático abaixo. Estou calibrado para jogar partidas competitivas!',
+                message: _speechMessage,
               ),
 
               const SizedBox(height: 20),
@@ -160,9 +279,9 @@ class _BotStudioScreenState extends State<BotStudioScreen> {
                     ),
                     Slider(
                       value: botElo,
-                      min: 400,
+                      min: 300,
                       max: 2400,
-                      divisions: 40,
+                      divisions: 42,
                       activeColor: AppColors.primaryCyan,
                       inactiveColor: AppColors.surfaceElevated,
                       onChanged: (val) {
