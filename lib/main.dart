@@ -159,7 +159,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
       ),
       body: SafeArea(
         child: ListView(
-          cacheExtent: 5000,
+          cacheExtent: 5000.0,
           padding: const EdgeInsets.all(16),
           children: [
             // Banner de Status

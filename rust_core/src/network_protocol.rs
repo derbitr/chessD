@@ -216,7 +216,23 @@ pub fn validate_and_apply_remote_move(
     // Gera lances legais da posicao
     let legals = pos.legal_moves();
     let matching_move = legals.iter().find(|m| {
-        m.from() == Some(from) && m.to() == to && m.promotion() == promotion_role
+        if m.from() != Some(from) {
+            return false;
+        }
+        if m.promotion() != promotion_role {
+            return false;
+        }
+        if m.to() == to {
+            return true;
+        }
+        // Suporte para roque no formato padrao FIDE (e1->g1 / e1->c1 / e8->g8 / e8->c8)
+        if m.is_castle() {
+            let uci = m.to_uci(shakmaty::CastlingMode::Standard).to_string();
+            if uci.len() >= 4 && uci[2..4] == to.to_string() {
+                return true;
+            }
+        }
+        false
     });
 
     match matching_move {
@@ -232,8 +248,8 @@ pub fn validate_and_apply_remote_move(
             // Protecao de lag com teto maximo de 200 ms (padrao FIDE / Lichess)
             let lag_compensation = one_way_latency_ms.clamp(0, 200);
 
-            // Gera notacao em texto simplificada (ex: e2e4)
-            let san = format!("{}{}", from, to);
+            // Gera notacao UCI canonica (ex: e2e4, e1g1 para roque, e7e8q para promocao)
+            let san = legal_mv.to_uci(shakmaty::CastlingMode::Standard).to_string();
 
             RemoteMoveValidationResult {
                 is_legal: true,
@@ -303,14 +319,30 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_and_apply_remote_move_legal() {
-        let initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        // e2 (square 12) -> e4 (square 28)
-        let res = validate_and_apply_remote_move(initial_fen, 12, 28, None, 45);
+    fn test_validate_and_apply_remote_move_en_passant() {
+        // Position where black just played d7-d5, en passant target is d6
+        let ep_fen = "rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2";
+        // e5 is square 36, d6 is square 43
+        let res = validate_and_apply_remote_move(ep_fen, 36, 43, None, 20);
         assert!(res.is_legal);
-        assert!(res.new_fen.contains("4P3"));
-        assert_eq!(res.lag_compensated_ms, 45);
-        assert!(!res.is_checkmate);
+        assert_eq!(res.san, "e5d6");
+        // Black pawn on d5 should be captured (not in new FEN)
+        assert!(!res.new_fen.contains("3pP3"));
+    }
+
+    #[test]
+    fn test_validate_and_apply_remote_move_castling() {
+        // White can castle kingside: e1 (4) -> g1 (6)
+        let castle_fen = "r1bqk2r/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
+        let pos: Chess = castle_fen.parse::<shakmaty::fen::Fen>().unwrap().into_position(shakmaty::CastlingMode::Standard).unwrap();
+        for m in pos.legal_moves() {
+            if m.from() == Some(Square::new(4)) {
+                println!("Legal move from e1: to={:?}, is_castle={}, uci={}", m.to(), m.is_castle(), m.to_uci(shakmaty::CastlingMode::Standard));
+            }
+        }
+        let res = validate_and_apply_remote_move(castle_fen, 4, 6, None, 15);
+        println!("Castling test result: is_legal={}, error={:?}, san={}", res.is_legal, res.error_message, res.san);
+        assert!(res.is_legal);
     }
 
     #[test]

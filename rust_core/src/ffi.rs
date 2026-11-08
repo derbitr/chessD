@@ -1,3 +1,5 @@
+#![allow(clippy::not_unsafe_ptr_arg_deref)]
+
 use crate::anti_cheat::AntiCheatAnalyzer;
 use crate::bitboard_heatmap::TacticalHeatmap;
 use crate::bot::{BotPersonality, BotPlayer, BotProfile};

@@ -240,11 +240,11 @@ O projeto adota uma política de tolerância zero a falhas silenciosas (*silent 
 +-------------------------------------------------------------+
 | Suite de Testes            | Testes Executados | Status     |
 +----------------------------+-------------------+------------+
-| Rust Core Unit & Property  | 36                | 36 Aprovados|
+| Rust Core Unit & Property  | 37                | 37 Aprovados|
 | Flutter Integration & UI   | 44                | 44 Aprovados|
-| TOTAL                      | 80                | 80 Aprovados|
+| TOTAL                      | 81                | 81 Aprovados|
 +----------------------------+-------------------+------------+
-Tempo total de execucao dos 80 testes: < 12 segundos.
+Tempo total de execucao dos 81 testes: < 12 segundos.
 ```
 
 Principais cenários cobertos:
@@ -409,13 +409,13 @@ O arquivo gerado estará localizado em:
 - **Multiplayer Online P2P com Custo Zero:** Arquitetura híbrida com canais diretos WebRTC (STUN Google) e sinalização em Cloudflare Workers (Edge Serverless gratuito). Partidas online em tempo real com latência reduzida e custo zero de hospedagem.
 - **Protocolo de Rede e Algoritmo SNTP em Rust (`network_protocol.rs`):** Medição de RTT e offset temporal com compensação justa de lag até 200 ms e validação estrita de lances remotos por Bitboards FIDE.
 - **Central de Ajuda & Guia do Usuário (`HelpSupportScreen`):** Seção completa com manual de regras oficiais FIDE (Roque, En Passant, Afogamento, 50 lances), guia de conectividade e FAQ.
-- **Expansão da Cobertura de Testes:** Bateria ampliada para 80 testes automatizados (36 testes de núcleo Rust e 44 testes de interface e rede Flutter), com 100% de aprovação e zero falhas de layout.
+- **Expansão da Cobertura de Testes:** Bateria ampliada para 81 testes automatizados (37 testes de núcleo Rust e 44 testes de interface e rede Flutter), com 100% de aprovação e zero falhas de layout.
 
 #### Artefatos Disponíveis e Somas de Verificação (v1.0.2):
 
 | Artefato | Plataforma | Descrição | SHA-256 |
 | :--- | :--- | :--- | :--- |
-| `chessD-v1.0.2-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `5C9ED57D5DF9180DB9FF3E77E4513AA4A70B1720105581B07678EA2904C4501F` |
+| `chessD-v1.0.2-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `37D6A605F16ED03F2360564DADE717772FE4B732234D1F0D94638147744DE1F2` |
 | `chessD-v1.0.2-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | *Pronto para compilação via CI/CD no disparo da tag v1.0.2* |
 
 ---

@@ -57,7 +57,7 @@ impl SwissTournament {
         let mut paired = vec![false; players.len()];
 
         // Se número ímpar de participantes, concede Bye (1.0 pt) ao último que ainda não teve
-        if sorted_indices.len() % 2 != 0 {
+        if !sorted_indices.len().is_multiple_of(2) {
             for &idx in sorted_indices.iter().rev() {
                 if !players[idx].had_bye {
                     players[idx].had_bye = true;

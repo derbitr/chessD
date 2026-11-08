@@ -27,7 +27,6 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
 
   List<Map<String, dynamic>> currentPairings = [];
   int roundNumber = 0;
-  final TextEditingController _newPlayerController = TextEditingController();
 
   void _generateNextRound() {
     final result = widget.ffi.generateSwissPairings(players);

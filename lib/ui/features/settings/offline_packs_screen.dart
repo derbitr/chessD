@@ -111,7 +111,8 @@ class _OfflinePacksScreenState extends State<OfflinePacksScreen> {
                       ),
                       Switch(
                         value: isCastActive,
-                        activeColor: AppColors.accentEmerald,
+                        activeThumbColor: AppColors.accentEmerald,
+                        activeTrackColor: AppColors.accentEmerald.withAlpha(128),
                         onChanged: _toggleWifiCast,
                       ),
                     ],

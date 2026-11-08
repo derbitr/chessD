@@ -128,24 +128,34 @@ class _RetryMistakesScreenState extends State<RetryMistakesScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.surfaceElevated),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('ERROS SUPERADOS', style: AppTypography.labelSmall),
-                        const SizedBox(height: 4),
-                        Text(
-                          '$solvedCount / ${mistakeDrills.length}',
-                          style: AppTypography.displayMedium.copyWith(color: AppColors.secondaryAmber),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('ERROS SUPERADOS', style: AppTypography.labelSmall),
+                            const SizedBox(height: 4),
+                            Text(
+                              '$solvedCount / ${mistakeDrills.length}',
+                              style: AppTypography.displayMedium.copyWith(color: AppColors.secondaryAmber),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.skip_next, color: AppColors.primaryCyan),
+                          tooltip: 'Próximo Erro',
+                          onPressed: _nextDrill,
                         ),
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.skip_next, color: AppColors.primaryCyan),
-                      tooltip: 'Próximo Erro',
-                      onPressed: _nextDrill,
+                    const Divider(height: 16),
+                    Text(
+                      drill['title'] as String,
+                      style: AppTypography.titleMedium.copyWith(color: AppColors.primaryCyan),
                     ),
                   ],
                 ),

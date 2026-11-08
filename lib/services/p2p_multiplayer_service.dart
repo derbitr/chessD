@@ -107,6 +107,7 @@ class P2PMultiplayerService extends ChangeNotifier {
     int timeMinutes = 5,
     int incrementSeconds = 3,
   }) async {
+    disconnect();
     _roomCode = generateRoomCode();
     _playerId = 'host_${Random().nextInt(999999)}';
     _myRemainingTimeMs = timeMinutes * 60 * 1000;
@@ -131,6 +132,7 @@ class P2PMultiplayerService extends ChangeNotifier {
 
   /// Conecta a uma sala existente através do código
   Future<bool> joinRoom(String code, {String playerName = 'Desafiante'}) async {
+    disconnect();
     _roomCode = code.toUpperCase().trim();
     _playerId = 'guest_${Random().nextInt(999999)}';
     _isOpponentConnected = false;

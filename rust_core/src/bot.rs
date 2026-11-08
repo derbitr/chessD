@@ -138,7 +138,7 @@ impl BotPlayer {
                 score - personality_bonus
             };
 
-            scored_moves.push((final_score, m.clone()));
+            scored_moves.push((final_score, *m));
         }
 
         if is_white {
