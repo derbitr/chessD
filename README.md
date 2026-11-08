@@ -2,6 +2,11 @@
 
 Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica de partidas, desenvolvida com Flutter 3.47 e Rust 1.96. Totalmente offline, gratuito e sem cobrança por recursos analíticos.
 
+**Central de Downloads e Releases Oficiais:**
+- **Versao Mais Recente (v1.0.2):** [Acessar Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
+- **Download Direto para Windows (64-bit):** [chessD-v1.0.2-windows-x64.zip](https://github.com/derbitr/chessD/releases/download/v1.0.2/chessD-v1.0.2-windows-x64.zip)
+- **Catalogo Completo de Releases:** [github.com/derbitr/chessD/releases](https://github.com/derbitr/chessD/releases)
+
 ---
 
 ## 1. Visão Geral do Projeto
@@ -417,7 +422,10 @@ O arquivo gerado estará localizado em:
 
 ## 8. Notas de Lançamento (Releases)
 
-### 8.1 Release v1.0.2 - Multiplayer Online P2P Custo Zero, Central de Ajuda & Integração de Torneios
+Todas as versões binárias compiladas, pacotes de instalação e notas técnicas estão disponíveis na central oficial de distribuição:
+[Acessar Central de Releases no GitHub](https://github.com/derbitr/chessD/releases)
+
+### 8.1 Release v1.0.2 - [Ver Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
 
 #### Destaques da Versão v1.0.2:
 - **Multiplayer Online P2P com Custo Zero:** Arquitetura híbrida com canais diretos WebRTC (STUN Google) e sinalização em Cloudflare Workers (Edge Serverless gratuito). Partidas online em tempo real com latência reduzida e custo zero de hospedagem.
@@ -431,12 +439,12 @@ O arquivo gerado estará localizado em:
 
 | Artefato | Plataforma | Descrição | SHA-256 |
 | :--- | :--- | :--- | :--- |
-| `chessD-v1.0.2-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `F212AE891D66F2C3191EA9FC3878B80AEF7AB4ABC91B4457D9187B254C638620` |
-| `chessD-v1.0.2-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | *Pronto para compilação via CI/CD no disparo da tag v1.0.2* |
+| [`chessD-v1.0.2-windows-x64.zip`](https://github.com/derbitr/chessD/releases/download/v1.0.2/chessD-v1.0.2-windows-x64.zip) | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `F212AE891D66F2C3191EA9FC3878B80AEF7AB4ABC91B4457D9187B254C638620` |
+| `chessD-v1.0.2-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | [Disponível no GitHub Releases](https://github.com/derbitr/chessD/releases/tag/v1.0.2) |
 
 ---
 
-### 8.2 Release v1.0.1 - Personalização Visual Completa e Atualização de Marca
+### 8.2 Release v1.0.1 - [Ver Release v1.0.1 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.1)
 
 #### Destaques da Versão v1.0.1:
 - **Atualização Canônica de Marca:** Transição definitiva do nome do projeto e repositório para **chessD**.
