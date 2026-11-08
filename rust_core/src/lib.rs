@@ -1,10 +1,14 @@
+pub mod anti_cheat;
 pub mod bitboard_heatmap;
 pub mod bot;
 pub mod chess960;
 pub mod engine;
 pub mod ffi;
 pub mod game_review;
+pub mod openings;
 pub mod rating;
+pub mod srs;
+pub mod tournament;
 pub mod zstd_store;
 
 #[cfg(test)]

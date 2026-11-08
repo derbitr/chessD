@@ -58,6 +58,33 @@ typedef ChessClassifyMoveDart = Pointer<Utf8> Function(
   int timeSpentMs,
 );
 
+typedef ChessSrsReviewC = Pointer<Utf8> Function(Pointer<Utf8> cardJson, Uint8 quality, Uint64 epoch);
+typedef ChessSrsReviewDart = Pointer<Utf8> Function(Pointer<Utf8> cardJson, int quality, int epoch);
+
+typedef ChessOpeningsCatalogJsonC = Pointer<Utf8> Function();
+typedef ChessOpeningsCatalogJsonDart = Pointer<Utf8> Function();
+
+typedef ChessOpeningsLookupEcoC = Pointer<Utf8> Function(Pointer<Utf8> eco);
+typedef ChessOpeningsLookupEcoDart = Pointer<Utf8> Function(Pointer<Utf8> eco);
+
+typedef ChessSwissGeneratePairingsC = Pointer<Utf8> Function(Pointer<Utf8> playersJson);
+typedef ChessSwissGeneratePairingsDart = Pointer<Utf8> Function(Pointer<Utf8> playersJson);
+
+typedef ChessAntiCheatAuditC = Pointer<Utf8> Function(
+  Pointer<Utf8> movesJson,
+  Pointer<Utf8> top1Json,
+  Pointer<Utf8> top2Json,
+  Pointer<Utf8> cplsJson,
+  Pointer<Utf8> timesJson,
+);
+typedef ChessAntiCheatAuditDart = Pointer<Utf8> Function(
+  Pointer<Utf8> movesJson,
+  Pointer<Utf8> top1Json,
+  Pointer<Utf8> top2Json,
+  Pointer<Utf8> cplsJson,
+  Pointer<Utf8> timesJson,
+);
+
 typedef ChessStringFreeC = Void Function(Pointer<Utf8> s);
 typedef ChessStringFreeDart = void Function(Pointer<Utf8> s);
 
@@ -98,6 +125,11 @@ class ChessRustFfi {
   late final Chess960FenBySeedDart _fenBySeed960;
   late final ChessRatingUpdatePuzzleDart _ratingUpdate;
   late final ChessClassifyMoveDart _classifyMove;
+  late final ChessSrsReviewDart _srsReview;
+  late final ChessOpeningsCatalogJsonDart _openingsCatalog;
+  late final ChessOpeningsLookupEcoDart _openingsLookupEco;
+  late final ChessSwissGeneratePairingsDart _swissPairings;
+  late final ChessAntiCheatAuditDart _antiCheatAudit;
   late final ChessStringFreeDart _freeString;
 
   ChessRustFfi() {
@@ -116,6 +148,11 @@ class ChessRustFfi {
     _fenBySeed960 = dylib.lookupFunction<Chess960FenBySeedC, Chess960FenBySeedDart>('chess_960_fen_by_seed');
     _ratingUpdate = dylib.lookupFunction<ChessRatingUpdatePuzzleC, ChessRatingUpdatePuzzleDart>('chess_rating_update_puzzle');
     _classifyMove = dylib.lookupFunction<ChessClassifyMoveC, ChessClassifyMoveDart>('chess_classify_move');
+    _srsReview = dylib.lookupFunction<ChessSrsReviewC, ChessSrsReviewDart>('chess_srs_review');
+    _openingsCatalog = dylib.lookupFunction<ChessOpeningsCatalogJsonC, ChessOpeningsCatalogJsonDart>('chess_openings_catalog_json');
+    _openingsLookupEco = dylib.lookupFunction<ChessOpeningsLookupEcoC, ChessOpeningsLookupEcoDart>('chess_openings_lookup_eco');
+    _swissPairings = dylib.lookupFunction<ChessSwissGeneratePairingsC, ChessSwissGeneratePairingsDart>('chess_swiss_generate_pairings');
+    _antiCheatAudit = dylib.lookupFunction<ChessAntiCheatAuditC, ChessAntiCheatAuditDart>('chess_anti_cheat_audit');
     _freeString = dylib.lookupFunction<ChessStringFreeC, ChessStringFreeDart>('chess_string_free');
   }
 
@@ -279,6 +316,92 @@ class ChessRustFfi {
     } finally {
       calloc.free(playedPtr);
       calloc.free(bestPtr);
+    }
+  }
+
+  Map<String, dynamic> reviewSrsCard(Map<String, dynamic> card, int quality, int epoch) {
+    final jsonIn = jsonEncode(card).toNativeUtf8();
+    try {
+      final ptr = _srsReview(jsonIn, quality, epoch);
+      if (ptr.address == 0) return {};
+      try {
+        return jsonDecode(ptr.toDartString()) as Map<String, dynamic>;
+      } finally {
+        _freeString(ptr);
+      }
+    } finally {
+      calloc.free(jsonIn);
+    }
+  }
+
+  List<dynamic> getOpeningsCatalog() {
+    final ptr = _openingsCatalog();
+    if (ptr.address == 0) return [];
+    try {
+      return jsonDecode(ptr.toDartString()) as List<dynamic>;
+    } finally {
+      _freeString(ptr);
+    }
+  }
+
+  Map<String, dynamic>? lookupOpeningEco(String eco) {
+    final ecoPtr = eco.toNativeUtf8();
+    try {
+      final ptr = _openingsLookupEco(ecoPtr);
+      if (ptr.address == 0) return null;
+      try {
+        final str = ptr.toDartString();
+        if (str == 'null') return null;
+        return jsonDecode(str) as Map<String, dynamic>;
+      } finally {
+        _freeString(ptr);
+      }
+    } finally {
+      calloc.free(ecoPtr);
+    }
+  }
+
+  Map<String, dynamic> generateSwissPairings(List<Map<String, dynamic>> players) {
+    final jsonIn = jsonEncode(players).toNativeUtf8();
+    try {
+      final ptr = _swissPairings(jsonIn);
+      if (ptr.address == 0) return {};
+      try {
+        return jsonDecode(ptr.toDartString()) as Map<String, dynamic>;
+      } finally {
+        _freeString(ptr);
+      }
+    } finally {
+      calloc.free(jsonIn);
+    }
+  }
+
+  Map<String, dynamic> auditAntiCheat({
+    required List<String> movesPlayed,
+    required List<String> engineTop1,
+    required List<String> engineTop2,
+    required List<int> centipawnLosses,
+    required List<int> moveTimesMs,
+  }) {
+    final movesPtr = jsonEncode(movesPlayed).toNativeUtf8();
+    final top1Ptr = jsonEncode(engineTop1).toNativeUtf8();
+    final top2Ptr = jsonEncode(engineTop2).toNativeUtf8();
+    final cplsPtr = jsonEncode(centipawnLosses).toNativeUtf8();
+    final timesPtr = jsonEncode(moveTimesMs).toNativeUtf8();
+    try {
+      final ptr = _antiCheatAudit(movesPtr, top1Ptr, top2Ptr, cplsPtr, timesPtr);
+      if (ptr.address == 0) return {};
+      try {
+        return jsonDecode(ptr.toDartString()) as Map<String, dynamic>;
+      } finally {
+        _freeString(ptr);
+      }
+    } finally {
+      calloc.free(movesPtr);
+      calloc.free(top1Ptr);
+      calloc.free(top2Ptr);
+      calloc.free(cplsPtr);
+      calloc.free(timesPtr);
     }
   }
 }

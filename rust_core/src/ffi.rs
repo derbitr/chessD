@@ -1,10 +1,15 @@
+use crate::anti_cheat::AntiCheatAnalyzer;
 use crate::bitboard_heatmap::TacticalHeatmap;
 use crate::bot::{BotPersonality, BotPlayer, BotProfile};
 use crate::chess960::Chess960;
 use crate::engine::ChessGame;
 use crate::game_review::{Caps2Evaluator, MoveAnalysis};
+use crate::openings::OpeningBook;
 use crate::rating::RatingCalculator;
+use crate::srs::SrsCard;
+use crate::tournament::{SwissTournament, TournamentPairing, TournamentPlayer};
 use crate::zstd_store::{PuzzleRecord, ZstdPuzzlePack};
+use serde::Serialize;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 
@@ -263,6 +268,103 @@ pub extern "C" fn chess_zstd_decompress_puzzles(bytes_ptr: *const u8, len: usize
             to_c_string(err)
         }
     }
+}
+
+#[no_mangle]
+pub extern "C" fn chess_srs_review(card_json: *const c_char, quality: u8, epoch: u64) -> *mut c_char {
+    if card_json.is_null() {
+        return std::ptr::null_mut();
+    }
+    let s = unsafe { CStr::from_ptr(card_json) }.to_str().unwrap_or_default();
+    match serde_json::from_str::<SrsCard>(s) {
+        Ok(mut card) => {
+            card.review(quality, epoch);
+            let out = serde_json::to_string(&card).unwrap_or_default();
+            to_c_string(out)
+        }
+        Err(e) => {
+            let err = format!("{{\"error\":\"{}\"}}", e);
+            to_c_string(err)
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn chess_openings_catalog_json() -> *mut c_char {
+    let catalog = OpeningBook::get_curated_openings();
+    let json = serde_json::to_string(&catalog).unwrap_or_default();
+    to_c_string(json)
+}
+
+#[no_mangle]
+pub extern "C" fn chess_openings_lookup_eco(eco: *const c_char) -> *mut c_char {
+    if eco.is_null() {
+        return std::ptr::null_mut();
+    }
+    let eco_str = unsafe { CStr::from_ptr(eco) }.to_str().unwrap_or_default();
+    match OpeningBook::find_by_eco(eco_str) {
+        Some(info) => {
+            let json = serde_json::to_string(&info).unwrap_or_default();
+            to_c_string(json)
+        }
+        None => to_c_string("null".to_string()),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn chess_swiss_generate_pairings(players_json: *const c_char) -> *mut c_char {
+    if players_json.is_null() {
+        return std::ptr::null_mut();
+    }
+    let s = unsafe { CStr::from_ptr(players_json) }.to_str().unwrap_or_default();
+    match serde_json::from_str::<Vec<TournamentPlayer>>(s) {
+        Ok(mut players) => {
+            let pairings = SwissTournament::generate_round_pairings(&mut players);
+            #[derive(Serialize)]
+            struct SwissResult {
+                pairings: Vec<TournamentPairing>,
+                updated_players: Vec<TournamentPlayer>,
+            }
+            let res = SwissResult {
+                pairings,
+                updated_players: players,
+            };
+            let json = serde_json::to_string(&res).unwrap_or_default();
+            to_c_string(json)
+        }
+        Err(e) => {
+            let err = format!("{{\"error\":\"{}\"}}", e);
+            to_c_string(err)
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn chess_anti_cheat_audit(
+    moves_json: *const c_char,
+    top1_json: *const c_char,
+    top2_json: *const c_char,
+    cpls_json: *const c_char,
+    times_json: *const c_char,
+) -> *mut c_char {
+    if moves_json.is_null() || top1_json.is_null() || top2_json.is_null() {
+        return std::ptr::null_mut();
+    }
+    let moves_s = unsafe { CStr::from_ptr(moves_json) }.to_str().unwrap_or_default();
+    let top1_s = unsafe { CStr::from_ptr(top1_json) }.to_str().unwrap_or_default();
+    let top2_s = unsafe { CStr::from_ptr(top2_json) }.to_str().unwrap_or_default();
+    let cpls_s = if !cpls_json.is_null() { unsafe { CStr::from_ptr(cpls_json) }.to_str().unwrap_or_default() } else { "[]" };
+    let times_s = if !times_json.is_null() { unsafe { CStr::from_ptr(times_json) }.to_str().unwrap_or_default() } else { "[]" };
+
+    let moves: Vec<String> = serde_json::from_str(moves_s).unwrap_or_default();
+    let top1: Vec<String> = serde_json::from_str(top1_s).unwrap_or_default();
+    let top2: Vec<String> = serde_json::from_str(top2_s).unwrap_or_default();
+    let cpls: Vec<i32> = serde_json::from_str(cpls_s).unwrap_or_default();
+    let times: Vec<u32> = serde_json::from_str(times_s).unwrap_or_default();
+
+    let report = AntiCheatAnalyzer::analyze(&moves, &top1, &top2, &cpls, &times);
+    let json = serde_json::to_string(&report).unwrap_or_default();
+    to_c_string(json)
 }
 
 #[no_mangle]
