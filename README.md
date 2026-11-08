@@ -415,7 +415,7 @@ O arquivo gerado estará localizado em:
 
 | Artefato | Plataforma | Descrição | SHA-256 |
 | :--- | :--- | :--- | :--- |
-| `chessD-v1.0.2-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `1CFA4A4C4A135EB2FD4994F4564AEE01C62A2C74BBAC2B9381358005C9DD7140` |
+| `chessD-v1.0.2-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `F212AE891D66F2C3191EA9FC3878B80AEF7AB4ABC91B4457D9187B254C638620` |
 | `chessD-v1.0.2-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | *Pronto para compilação via CI/CD no disparo da tag v1.0.2* |
 
 ---
