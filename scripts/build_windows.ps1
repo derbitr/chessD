@@ -1,4 +1,7 @@
 # Script de compilacao para Windows do chessD
+param (
+    [string]$Version = "v1.0.2"
+)
 $ErrorActionPreference = "Stop"
 
 Write-Host "Iniciando compilacao do Rust Core..."
@@ -14,7 +17,7 @@ $releaseDir = "$PSScriptRoot\..\build\windows\x64\runner\Release"
 Copy-Item "$PSScriptRoot\..\rust_core\target\release\rust_core.dll" -Destination "$releaseDir\rust_core.dll" -Force
 
 Write-Host "Criando pacote zip portatil..."
-$zipPath = "$PSScriptRoot\..\build\chessD-v1.0.1-windows-x64.zip"
+$zipPath = "$PSScriptRoot\..\build\chessD-$Version-windows-x64.zip"
 Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipPath -Force
 
 Write-Host "Concluido com sucesso: $zipPath"

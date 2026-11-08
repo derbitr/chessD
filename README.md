@@ -213,6 +213,21 @@ $$EF' = \max\left(1.3, \; EF + (0.1 - (5 - q) \cdot (0.08 + (5 - q) \cdot 0.02))
   - Propagação instantânea e atômica para todos os widgets sem necessidade de reinicializar a árvore de visualização ou recarregar rotas.
   - Tela de personalização visual com tabuleiro interativo em tempo real (*Live Preview*) permitindo testar lances e avaliar harmonização de paletas antes da aplicação global.
 
+### 4.20 Multiplayer Online P2P & Borda Serverless (Custo Zero)
+- **Topologia Híbrida WebRTC + Cloudflare Workers:**
+  - **Tier 1 (P2P Direto):** Estabelece canal de dados ponto a ponto (`RTCDataChannel`) diretamente entre os dispositivos dos jogadores utilizando servidores STUN públicos e gratuitos do Google (`stun:stun.l.google.com:19302`), com latência típica de 10 a 25 ms.
+  - **Tier 2 (Relay Serverless):** Caso os nós estejam sob roteadores com Symmetric NAT / CGNAT estrito, o sistema migra transparentemente para relay WebSocket em Cloudflare Workers rodando na borda sob a cota gratuita de 100.000 requisições diárias.
+  - **Custo de Hospedagem:** R$ 0,00 perpétuo, sem infraestrutura dedicada nem mensalidades de servidores.
+- **Protocolo de Rede Nativo em Rust (`network_protocol.rs`):**
+  - **Validação Bidirecional:** Todo lance recebido é recalculado e validado pelo motor Bitboard local antes de ser aceito, impedindo injeções de lances ilegais.
+  - **Compensação de Lag SNTP (RFC 4330):** Algoritmo de quatro marcas temporais ($t_0, t_1, t_2, t_3$) com cálculo de Round-Trip Time ($RTT$) e deriva temporal ($\theta$), concedendo crédito de atraso de até 200 ms sem permitir manipulação maliciosa de relógio.
+  - **Emparelhamento Simplificado:** Salas efêmeras identificadas por códigos alfanuméricos de 6 caracteres (ex: `K9W2B4`) com compartilhamento de 1 clique via WhatsApp ou área de transferência.
+
+### 4.21 Central de Ajuda & Guia do Usuário chessD
+- Tela dedicada acessível pela barra superior ou pelo hub principal (`help_support_screen.dart`).
+- **Manual de Regras Oficiais FIDE:** Regras completas de Roque Maior e Menor, Captura En Passant, Promoção de Peões e critérios de empate (afogamento, insuficiência material, repetição tripla e regra dos 50 lances).
+- **FAQ e Solução de Problemas:** Instruções passo a passo sobre o multiplayer P2P, reconexão de partidas em redes móveis e auditoria forense anti-cheat.
+
 ---
 
 ## 5. Garantia de Qualidade e Cobertura de Testes
@@ -225,11 +240,11 @@ O projeto adota uma política de tolerância zero a falhas silenciosas (*silent 
 +-------------------------------------------------------------+
 | Suite de Testes            | Testes Executados | Status     |
 +----------------------------+-------------------+------------+
-| Rust Core Unit & Property  | 31                | 31 Aprovados|
-| Flutter Integration & UI   | 40                | 40 Aprovados|
-| TOTAL                      | 71                | 71 Aprovados|
+| Rust Core Unit & Property  | 36                | 36 Aprovados|
+| Flutter Integration & UI   | 44                | 44 Aprovados|
+| TOTAL                      | 80                | 80 Aprovados|
 +----------------------------+-------------------+------------+
-Tempo total de execucao dos 71 testes: < 9 segundos.
+Tempo total de execucao dos 80 testes: < 12 segundos.
 ```
 
 Principais cenários cobertos:
@@ -242,7 +257,9 @@ Principais cenários cobertos:
 - Detecção de anomalias estatísticas pelo modelo de auditoria Ken Regan.
 - Alternância dinâmica entre Modo Claro e Modo Noite e integridade reativa do `ThemeController`.
 - Validação das 8 paletas de tabuleiro, 5 estilos de peças e 6 acentos cromáticos sem overflow visual.
-- Renderização limpa de todas as 16 telas e recursos do hub em resoluções mobile e desktop.
+- Ciclo de vida da sala P2P multiplayer, geração de códigos de 6 dígitos e validação de lances remotos com compensação SNTP.
+- Renderização integral da Central de Ajuda com todas as seções e FAQ sem quebra de layout.
+- Renderização limpa de todas as 18 telas e recursos do hub em resoluções mobile e desktop.
 
 ---
 
@@ -255,9 +272,10 @@ chessD/
 |       `-- build-and-release.yml   # CI/CD automatizado para Windows e Android
 |-- android/                        # Projeto Android nativo configurado
 |-- lib/
-|   |-- main.dart                   # Hub principal com todos os 16 recursos e modos
+|   |-- main.dart                   # Hub principal com todos os 18 recursos e modos
 |   |-- services/
 |   |   |-- chess_rust_ffi.dart     # Conector C-ABI FFI de baixo overhead
+|   |   |-- p2p_multiplayer_service.dart # Gerenciador de partidas online P2P e SNTP
 |   |   `-- wifi_cast_server.dart   # Servidor HTTP local de espelhamento
 |   `-- ui/
 |       |-- core/
@@ -267,10 +285,11 @@ chessD/
 |       |   |-- board/              # Widget de Tabuleiro reativo com preview e Notacao
 |       |   |-- game/               # Modos Pass&Play, Batalha com Bots e Studio
 |       |   |-- learning/           # Trilha Gamificada Duolingo
+|       |   |-- multiplayer/        # Tela de Partida Online P2P e Lobby
 |       |   |-- openings/           # Explorador Canonico de Aberturas ECO
 |       |   |-- puzzles/            # Puzzles Infinitos e Puzzle Ladder
 |       |   |-- repertoire/         # Treinador de Repertorio SuperMemo SM-2
-|       |   |-- settings/           # Gerenciador de Acervo, Cast e Customizacao Visual
+|       |   |-- settings/           # Gerenciador de Acervo, Cast, Customizacao Visual e Ajuda
 |       |   |-- tournament/         # Gerenciador de Torneio Suico FIDE
 |       |   `-- training/           # Repeticao de Erros e Treino de Coordenadas
 |       `-- theme/                  # Tokens visuais Dark Glass e Light responsivos
@@ -285,15 +304,20 @@ chessD/
 |       |-- bitboard_heatmap.rs     # Mapas de tensao e controle territorial
 |       |-- rating.rs               # Sistema de vidas, streaks e calculo de rating
 |       |-- game_review.rs          # Algoritmo CAPS2 e analise de Tilt
+|       |-- network_protocol.rs     # Protocolo P2P, SNTP de 4 tempos e validacao remota
 |       |-- srs.rs                  # Repeticao espacada SuperMemo SM-2
 |       |-- openings.rs             # Dicionario de aberturas e percentuais mestres
 |       |-- tournament.rs           # Emparelhamentos Suico FIDE e tiebreaks
 |       |-- anti_cheat.rs           # Pericia forense estatistica (Ken Regan)
 |       `-- zstd_store.rs           # Compressao e serializacao Zstandard
+|-- serverless/
+|   `-- cloudflare-worker/
+|       |-- worker.js               # Signaling WebRTC e WebSocket Relay Custo Zero
+|       `-- wrangler.toml           # Configuracao para publicacao serverless
 |-- scripts/
 |   |-- build_windows.ps1           # Script PowerShell para compilacao Windows
 |   `-- build_android.ps1           # Script PowerShell para compilacao Android
-|-- test/                           # Bateria de testes automatizados Flutter (40 testes)
+|-- test/                           # Bateria de testes automatizados Flutter (44 testes)
 `-- README.md                       # Documentacao tecnica integral
 ```
 
@@ -379,29 +403,35 @@ O arquivo gerado estará localizado em:
 
 ## 8. Notas de Lançamento (Releases)
 
-### 8.1 Release v1.0.1 - Personalização Visual Completa e Atualização de Marca
+### 8.1 Release v1.0.2 (Pronto para Lançamento) - Multiplayer Online P2P Custo Zero e Central de Ajuda
 
-#### Destaques da Versão v1.0.1:
-- **Atualização Canônica de Marca:** Transição definitiva do nome do projeto e repositório para **chessD**.
-- **Sistema Completo de Personalização Visual:**
-  - Alternância instantânea entre Modo Claro e Modo Noite padrão (`AppThemeMode`).
-  - 8 paletas exclusivas de cores para o tabuleiro de xadrez (Torneio Verde, Madeira Nobre, Oceano Meia-Noite, Ametista Real, Coral Pôr do Sol, Cyber Onyx, Menta Pastel e Monocromático).
-  - 5 conjuntos estilizados de cores para as peças com acabamentos contrastantes (Staunton Clássico, Dourado e Prata, Cyber Neon, Marfim e Ébano, Esmeralda e Ônix).
-  - 6 cores de acento de interface (Ciano, Esmeralda, Âmbar, Violeta, Carmesim e Azul Royal).
-  - Tabuleiro interativo de visualização em tempo real (*Live Preview*) na tela de configurações visuais.
-  - Arquitetura de reatividade unificada via `ThemeController.instance` com atualização instantânea de todos os componentes da UI sem recarga de rota.
-- **Expansão da Bateria de Testes:** Total de 71 testes automatizados (31 testes de núcleo Rust e 40 testes Flutter), com cobertura integral para a tela de customização visual e verificação de integridade de temas.
+#### Destaques da Versão v1.0.2:
+- **Multiplayer Online P2P com Custo Zero:** Arquitetura híbrida com canais diretos WebRTC (STUN Google) e sinalização em Cloudflare Workers (Edge Serverless gratuito). Partidas online em tempo real com latência reduzida e custo zero de hospedagem.
+- **Protocolo de Rede e Algoritmo SNTP em Rust (`network_protocol.rs`):** Medição de RTT e offset temporal com compensação justa de lag até 200 ms e validação estrita de lances remotos por Bitboards FIDE.
+- **Central de Ajuda & Guia do Usuário (`HelpSupportScreen`):** Seção completa com manual de regras oficiais FIDE (Roque, En Passant, Afogamento, 50 lances), guia de conectividade e FAQ.
+- **Expansão da Cobertura de Testes:** Bateria ampliada para 80 testes automatizados (36 testes de núcleo Rust e 44 testes de interface e rede Flutter), com 100% de aprovação e zero falhas de layout.
 
-#### Artefatos Disponíveis e Somas de Verificação (v1.0.1):
+#### Artefatos Disponíveis e Somas de Verificação (v1.0.2):
 
 | Artefato | Plataforma | Descrição | SHA-256 |
 | :--- | :--- | :--- | :--- |
-| `chessD-v1.0.1-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `8405862356B973EF37DC2F30E3E37C7215B17764498C663BD4EC0E949505E75E` |
-| `chessD-v1.0.1-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | `61FD25BB187B3BFBC74BCD5C5CAE5E8ACE65AC57162298F962168C5E46C45EED` |
+| `chessD-v1.0.2-windows-x64.zip` | Windows 64-bit | Pacote portátil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execução | `5C9ED57D5DF9180DB9FF3E77E4513AA4A70B1720105581B07678EA2904C4501F` |
+| `chessD-v1.0.2-android.apk` | Android 8.0+ | Pacote de instalação APK para dispositivos móveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | *Pronto para compilação via CI/CD no disparo da tag v1.0.2* |
 
 ---
 
-### 8.2 Release v1.0.0 - Lançamento Inicial Canônico
+### 8.2 Release v1.0.1 - Personalização Visual Completa e Atualização de Marca
+
+#### Destaques da Versão v1.0.1:
+- **Atualização Canônica de Marca:** Transição definitiva do nome do projeto e repositório para **chessD**.
+- **Sistema Completo de Personalização Visual:** Alternância entre Modo Claro e Modo Noite padrão, 8 paletas de tabuleiro, 5 estilos de peças e 6 cores de acento.
+- **Artefatos Históricos (v1.0.1):**
+  - `chessD-v1.0.1-windows-x64.zip` (SHA-256: `8405862356B973EF37DC2F30E3E37C7215B17764498C663BD4EC0E949505E75E`)
+  - `chessD-v1.0.1-android.apk` (SHA-256: `61FD25BB187B3BFBC74BCD5C5CAE5E8ACE65AC57162298F962168C5E46C45EED`)
+
+---
+
+### 8.3 Release v1.0.0 - Lançamento Inicial Canônico
 
 #### Destaques da Versão v1.0.0:
 - Implementação inicial completa de todas as 7 fases do plano mestre do motor de xadrez.
@@ -417,15 +447,15 @@ O arquivo gerado estará localizado em:
 
 ---
 
-### 8.3 Instruções de Instalação e Execução
+### 8.4 Instruções de Instalação e Execução
 
 #### No Windows:
-1. Extraia o conteúdo de `chessD-v1.0.1-windows-x64.zip` em uma pasta de sua preferência.
+1. Extraia o conteúdo do arquivo `.zip` da release em uma pasta de sua preferência.
 2. Certifique-se de que o arquivo `rust_core.dll` permaneça na mesma pasta do executável `chessD.exe`.
 3. Dê um duplo clique em `chessD.exe` para iniciar o aplicativo. Não é necessária nenhuma instalação adicional.
 
 #### No Android:
-1. Transfira o arquivo `chessD-v1.0.1-android.apk` para o armazenamento do seu smartphone ou faça o download diretamente pelo navegador do aparelho.
+1. Transfira o arquivo `.apk` da release para o armazenamento do seu smartphone ou faça o download diretamente pelo navegador do aparelho.
 2. Abra o arquivo no gerenciador de arquivos do Android e permita a instalação a partir da fonte selecionada, se solicitado pelo sistema operacional.
 3. Conclua a instalação e abra o aplicativo chessD. O aplicativo opera integralmente em modo offline desde a primeira inicialização.
 

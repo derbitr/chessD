@@ -1,0 +1,6 @@
+name = "chessd-relay"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# Limite gratuito: 100.000 requests/dia com WebSockets ilimitados
+# Sem custos, sem banco de dados pago, 100% serverless

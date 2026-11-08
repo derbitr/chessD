@@ -5,6 +5,7 @@ pub mod chess960;
 pub mod engine;
 pub mod ffi;
 pub mod game_review;
+pub mod network_protocol;
 pub mod openings;
 pub mod rating;
 pub mod srs;

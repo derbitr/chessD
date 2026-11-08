@@ -190,6 +190,7 @@ class ThemeController extends ChangeNotifier {
   AccentVisualTheme get accentTheme => _accentTheme;
 
   bool get isDark => _themeMode == AppThemeMode.dark;
+  bool get isDarkMode => isDark;
   Color get lightSquareColor => _boardTheme.lightColor;
   Color get darkSquareColor => _boardTheme.darkColor;
   Color get whitePieceColor => _pieceTheme.whiteColor;

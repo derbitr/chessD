@@ -19,6 +19,8 @@ import 'package:soberano_chess/ui/features/repertoire/repertoire_trainer_screen.
 import 'package:soberano_chess/ui/features/tournament/tournament_manager_screen.dart';
 import 'package:soberano_chess/ui/features/settings/offline_packs_screen.dart';
 import 'package:soberano_chess/ui/features/settings/theme_customization_screen.dart';
+import 'package:soberano_chess/ui/features/multiplayer/online_multiplayer_screen.dart';
+import 'package:soberano_chess/ui/features/settings/help_support_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -105,6 +107,15 @@ class _MainHubScreenState extends State<MainHubScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.help_outline, color: ThemeController.instance.accentColor),
+            tooltip: 'Ajuda & Guia',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: Icon(Icons.palette_outlined, color: ThemeController.instance.accentColor),
             tooltip: 'Personalização Visual',
@@ -485,6 +496,44 @@ class _MainHubScreenState extends State<MainHubScreen> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const ThemeCustomizationScreen(),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 24),
+            const Text('MULTIPLAYER & COMUNICAÇÃO', style: AppTypography.labelSmall),
+            const SizedBox(height: 12),
+
+            // Card 17: Multiplayer Online P2P
+            _buildModeCard(
+              title: 'Multiplayer Online P2P (Custo Zero)',
+              subtitle: 'Jogue online via WebRTC direto com STUN do Google e fallback em Cloudflare Workers. 100% gratuito.',
+              icon: Icons.wifi_tethering,
+              accentColor: AppColors.primaryCyan,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const OnlineMultiplayerScreen(),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 24),
+            const Text('SUPORTE & APRENDIZADO', style: AppTypography.labelSmall),
+            const SizedBox(height: 12),
+
+            // Card 18: Central de Ajuda
+            _buildModeCard(
+              title: 'Central de Ajuda & Guia chessD',
+              subtitle: 'Guia do multiplayer online, manual de regras oficiais FIDE (roque, en passant) e FAQ completo.',
+              icon: Icons.help_outline,
+              accentColor: AppColors.secondaryAmber,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const HelpSupportScreen(),
                   ),
                 );
               },

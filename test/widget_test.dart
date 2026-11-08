@@ -26,5 +26,8 @@ void main() {
     expect(find.text('Torneios Locais (Sistema Suíço)'), findsOneWidget);
     expect(find.text('Perícia Forense Anti-Cheat'), findsOneWidget);
     expect(find.text('Acervo Offline & Wi-Fi Cast'), findsOneWidget);
+    expect(find.text('Personalização Visual & Paletas'), findsOneWidget);
+    expect(find.text('Multiplayer Online P2P (Custo Zero)'), findsOneWidget);
+    expect(find.text('Central de Ajuda & Guia chessD'), findsOneWidget);
   });
 }

@@ -368,6 +368,45 @@ pub extern "C" fn chess_anti_cheat_audit(
 }
 
 #[no_mangle]
+pub extern "C" fn chess_network_clock_sync(t0: i64, t1: i64, t2: i64, t3: i64) -> *mut c_char {
+    let res = crate::network_protocol::calculate_clock_sync(t0, t1, t2, t3);
+    let json = serde_json::to_string(&res).unwrap_or_default();
+    to_c_string(json)
+}
+
+#[no_mangle]
+pub extern "C" fn chess_network_validate_remote_move(
+    fen: *const c_char,
+    from_sq: u8,
+    to_sq: u8,
+    promotion: *const c_char,
+    latency_ms: i64,
+) -> *mut c_char {
+    if fen.is_null() {
+        return std::ptr::null_mut();
+    }
+    let fen_s = unsafe { CStr::from_ptr(fen) }.to_str().unwrap_or_default();
+    let promo_char = if !promotion.is_null() {
+        unsafe { CStr::from_ptr(promotion) }
+            .to_str()
+            .ok()
+            .and_then(|s| s.chars().next())
+    } else {
+        None
+    };
+
+    let res = crate::network_protocol::validate_and_apply_remote_move(
+        fen_s,
+        from_sq,
+        to_sq,
+        promo_char,
+        latency_ms,
+    );
+    let json = serde_json::to_string(&res).unwrap_or_default();
+    to_c_string(json)
+}
+
+#[no_mangle]
 pub extern "C" fn chess_bytes_free(ptr: *mut u8, len: usize) {
     if !ptr.is_null() && len > 0 {
         unsafe {

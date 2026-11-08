@@ -85,6 +85,24 @@ typedef ChessAntiCheatAuditDart = Pointer<Utf8> Function(
   Pointer<Utf8> timesJson,
 );
 
+typedef ChessNetworkClockSyncC = Pointer<Utf8> Function(Int64 t0, Int64 t1, Int64 t2, Int64 t3);
+typedef ChessNetworkClockSyncDart = Pointer<Utf8> Function(int t0, int t1, int t2, int t3);
+
+typedef ChessNetworkValidateRemoteMoveC = Pointer<Utf8> Function(
+  Pointer<Utf8> fen,
+  Uint8 fromSq,
+  Uint8 toSq,
+  Pointer<Utf8> promo,
+  Int64 latencyMs,
+);
+typedef ChessNetworkValidateRemoteMoveDart = Pointer<Utf8> Function(
+  Pointer<Utf8> fen,
+  int fromSq,
+  int toSq,
+  Pointer<Utf8> promo,
+  int latencyMs,
+);
+
 typedef ChessStringFreeC = Void Function(Pointer<Utf8> s);
 typedef ChessStringFreeDart = void Function(Pointer<Utf8> s);
 
@@ -130,6 +148,8 @@ class ChessRustFfi {
   late final ChessOpeningsLookupEcoDart _openingsLookupEco;
   late final ChessSwissGeneratePairingsDart _swissPairings;
   late final ChessAntiCheatAuditDart _antiCheatAudit;
+  late final ChessNetworkClockSyncDart _networkClockSync;
+  late final ChessNetworkValidateRemoteMoveDart _networkValidateRemoteMove;
   late final ChessStringFreeDart _freeString;
 
   ChessRustFfi() {
@@ -153,6 +173,8 @@ class ChessRustFfi {
     _openingsLookupEco = dylib.lookupFunction<ChessOpeningsLookupEcoC, ChessOpeningsLookupEcoDart>('chess_openings_lookup_eco');
     _swissPairings = dylib.lookupFunction<ChessSwissGeneratePairingsC, ChessSwissGeneratePairingsDart>('chess_swiss_generate_pairings');
     _antiCheatAudit = dylib.lookupFunction<ChessAntiCheatAuditC, ChessAntiCheatAuditDart>('chess_anti_cheat_audit');
+    _networkClockSync = dylib.lookupFunction<ChessNetworkClockSyncC, ChessNetworkClockSyncDart>('chess_network_clock_sync');
+    _networkValidateRemoteMove = dylib.lookupFunction<ChessNetworkValidateRemoteMoveC, ChessNetworkValidateRemoteMoveDart>('chess_network_validate_remote_move');
     _freeString = dylib.lookupFunction<ChessStringFreeC, ChessStringFreeDart>('chess_string_free');
   }
 
@@ -402,6 +424,59 @@ class ChessRustFfi {
       calloc.free(top2Ptr);
       calloc.free(cplsPtr);
       calloc.free(timesPtr);
+    }
+  }
+
+  Map<String, dynamic> calculateClockSync(int t0, int t1, int t2, int t3) {
+    try {
+      final ptr = _networkClockSync(t0, t1, t2, t3);
+      if (ptr.address == 0) {
+        return _fallbackClockSync(t0, t1, t2, t3);
+      }
+      try {
+        return jsonDecode(ptr.toDartString()) as Map<String, dynamic>;
+      } finally {
+        _freeString(ptr);
+      }
+    } catch (_) {
+      return _fallbackClockSync(t0, t1, t2, t3);
+    }
+  }
+
+  Map<String, dynamic> _fallbackClockSync(int t0, int t1, int t2, int t3) {
+    final rtt = ((t3 - t0) - (t2 - t1)).clamp(0, 10000);
+    final offset = (((t1 - t0) + (t2 - t3)) / 2).round();
+    return {
+      'rtt_ms': rtt,
+      'clock_offset_ms': offset,
+      'estimated_one_way_latency_ms': (rtt / 2).round(),
+    };
+  }
+
+  Map<String, dynamic> validateRemoteMove({
+    required String currentFen,
+    required int fromSq,
+    required int toSq,
+    String? promotion,
+    required int latencyMs,
+  }) {
+    final fenPtr = currentFen.toNativeUtf8();
+    final promoPtr = promotion != null ? promotion.toNativeUtf8() : nullptr;
+    try {
+      final ptr = _networkValidateRemoteMove(fenPtr, fromSq, toSq, promoPtr, latencyMs);
+      if (ptr.address == 0) {
+        return {'is_legal': false, 'error_message': 'Falha FFI na validação'};
+      }
+      try {
+        return jsonDecode(ptr.toDartString()) as Map<String, dynamic>;
+      } finally {
+        _freeString(ptr);
+      }
+    } catch (_) {
+      return {'is_legal': false, 'error_message': 'Erro de execução FFI'};
+    } finally {
+      calloc.free(fenPtr);
+      if (promoPtr != nullptr) calloc.free(promoPtr);
     }
   }
 }

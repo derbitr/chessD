@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.soberano" "\0"
-            VALUE "FileDescription", "soberano_chess" "\0"
+            VALUE "CompanyName", "chessD" "\0"
+            VALUE "FileDescription", "chessD" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "soberano_chess" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.soberano. All rights reserved." "\0"
-            VALUE "OriginalFilename", "soberano_chess.exe" "\0"
-            VALUE "ProductName", "soberano_chess" "\0"
+            VALUE "InternalName", "chessD" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 chessD. All rights reserved." "\0"
+            VALUE "OriginalFilename", "chessD.exe" "\0"
+            VALUE "ProductName", "chessD" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
