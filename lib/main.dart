@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:chess_d/services/app_update_service.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/services/wifi_cast_server.dart';
+import 'package:chess_d/ui/core/chess_balloon.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
 import 'package:chess_d/ui/core/chess_theme.dart';
@@ -59,12 +62,137 @@ class _MainHubScreenState extends State<MainHubScreen> {
   late final WifiCastServer castServer;
   bool isRustReady = false;
   int _currentTabIndex = 0;
+  AppUpdateInfo? _availableUpdate;
+  bool _dismissedUpdate = false;
 
   @override
   void initState() {
     super.initState();
     castServer = WifiCastServer();
     _initRustCore();
+    _checkAppUpdateSilently();
+  }
+
+  Future<void> _checkAppUpdateSilently() async {
+    final info = await AppUpdateService.checkForUpdate();
+    if (mounted && info != null && info.hasUpdate) {
+      setState(() {
+        _availableUpdate = info;
+      });
+    }
+  }
+
+  void _openUpdateUrl(String url) {
+    if (Platform.isWindows) {
+      Process.run('cmd', ['/c', 'start', '', url]);
+    } else if (Platform.isAndroid) {
+      Process.run('am', ['start', '-a', 'android.intent.action.VIEW', '-d', url]);
+    } else if (Platform.isLinux) {
+      Process.run('xdg-open', [url]);
+    } else if (Platform.isMacOS) {
+      Process.run('open', [url]);
+    }
+  }
+
+  Future<void> _manualCheckForUpdate() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: ThemeController.instance.surfaceColor,
+        content: Row(
+          children: [
+            const CircularProgressIndicator(color: Color(0xFF81B64C)),
+            const SizedBox(width: 16),
+            Text('Buscando atualizações...', style: TextStyle(color: ThemeController.instance.textPrimary)),
+          ],
+        ),
+      ),
+    );
+
+    final info = await AppUpdateService.checkForUpdate();
+    if (!mounted) return;
+    Navigator.of(context).pop();
+
+    if (info != null && info.hasUpdate) {
+      setState(() {
+        _availableUpdate = info;
+        _dismissedUpdate = false;
+      });
+      _showUpdateDialog(info);
+    } else {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: ThemeController.instance.surfaceColor,
+          title: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Color(0xFF81B64C), size: 24),
+              const SizedBox(width: 8),
+              Text('Versão Mais Recente', style: TextStyle(color: ThemeController.instance.textPrimary, fontSize: 18)),
+            ],
+          ),
+          content: Text(
+            'Você já está utilizando a versão mais recente do chessD (${AppUpdateService.currentVersion}).',
+            style: TextStyle(color: ThemeController.instance.textSecondary),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF81B64C)),
+              child: const Text('Entendido', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _showUpdateDialog(AppUpdateInfo info) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: ThemeController.instance.surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            const PawnLogo(size: 26, color: Color(0xFF81B64C), hasBadge: true),
+            const SizedBox(width: 10),
+            Text('Nova Atualização!', style: TextStyle(color: ThemeController.instance.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Versão ${info.latestVersion} disponível para download.',
+              style: TextStyle(color: ThemeController.instance.textPrimary, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Versão instalada: ${info.currentVersion}\nNovidades e correções estão prontas para serem instaladas no seu dispositivo.',
+              style: TextStyle(color: ThemeController.instance.textSecondary, fontSize: 13),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Depois', style: TextStyle(color: ThemeController.instance.textSecondary)),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _openUpdateUrl(info.downloadUrl);
+            },
+            icon: const Icon(Icons.download, size: 16, color: Colors.white),
+            label: const Text('Baixar Agora', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF81B64C)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -318,6 +446,39 @@ class _MainHubScreenState extends State<MainHubScreen> {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       children: [
+        // Balão de Notificação de Atualização Disponível
+        if (_availableUpdate != null && !_dismissedUpdate)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: ChessBalloonCard(
+              type: BalloonType.coach,
+              tail: BubbleTail.bottom,
+              avatar: const PawnLogo(size: 26, color: Color(0xFF81B64C), hasBadge: true),
+              title: 'Nova Versão Disponível (${_availableUpdate!.latestVersion})',
+              message: 'Uma atualização do chessD foi lançada no GitHub com novidades e melhorias.',
+              action: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => setState(() => _dismissedUpdate = true),
+                    child: Text('Depois', style: TextStyle(color: theme.textSecondary, fontSize: 12)),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () => _openUpdateUrl(_availableUpdate!.downloadUrl),
+                    icon: const Icon(Icons.download, size: 16, color: Colors.white),
+                    label: const Text('Baixar Agora', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF81B64C),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
         // Botão Hero Gigante "JOGAR" no Verde Canônico do Chess.com (#81B64C)
         SizedBox(
           width: double.infinity,
@@ -838,6 +999,14 @@ class _MainHubScreenState extends State<MainHubScreen> {
               ).then((_) => ffi!.freeGame(game960));
             }
           },
+        ),
+        const SizedBox(height: 12),
+        _buildModeCard(
+          title: 'Verificar Atualizações',
+          subtitle: 'Versão atual: ${AppUpdateService.currentVersion}. Notificações e novas releases no GitHub.',
+          icon: Icons.system_update_alt,
+          accentColor: const Color(0xFF81B64C),
+          onTap: _manualCheckForUpdate,
         ),
       ],
     );
