@@ -1,8 +1,9 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:chess_d/services/app_update_service.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
 import 'package:chess_d/services/player_stats_service.dart';
+import 'package:chess_d/services/system_bridge.dart';
 import 'package:chess_d/services/user_mistakes_service.dart';
 import 'package:chess_d/services/wifi_cast_server.dart';
 import 'package:chess_d/ui/core/chess_balloon.dart';
@@ -60,42 +61,92 @@ class MainHubScreen extends StatefulWidget {
   State<MainHubScreen> createState() => _MainHubScreenState();
 }
 
-class _MainHubScreenState extends State<MainHubScreen> {
+class _MainHubScreenState extends State<MainHubScreen> with WidgetsBindingObserver {
   ChessRustFfi? ffi;
   late final WifiCastServer castServer;
   bool isRustReady = false;
   int _currentTabIndex = 0;
   AppUpdateInfo? _availableUpdate;
   bool _dismissedUpdate = false;
+  DateTime? _lastUpdateCheckAt;
+  String? _notifiedVersionTag;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     castServer = WifiCastServer();
     PlayerStatsService.instance.loadSync();
     UserMistakesService.loadSync();
     _initRustCore();
+    SystemBridge.requestAndroidNotificationPermission();
     _checkAppUpdateSilently();
   }
 
-  Future<void> _checkAppUpdateSilently() async {
-    final info = await AppUpdateService.checkForUpdate();
-    if (mounted && info != null && info.hasUpdate) {
-      setState(() {
-        _availableUpdate = info;
-      });
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _availableUpdate == null) {
+      final elapsed = _lastUpdateCheckAt == null
+          ? const Duration(hours: 1)
+          : DateTime.now().difference(_lastUpdateCheckAt!);
+      if (elapsed >= const Duration(minutes: 15)) {
+        _checkAppUpdateSilently();
+      }
     }
   }
 
-  void _openUpdateUrl(String url) {
-    if (Platform.isWindows) {
-      Process.run('cmd', ['/c', 'start', '', url]);
-    } else if (Platform.isAndroid) {
-      Process.run('am', ['start', '-a', 'android.intent.action.VIEW', '-d', url]);
-    } else if (Platform.isLinux) {
-      Process.run('xdg-open', [url]);
-    } else if (Platform.isMacOS) {
-      Process.run('open', [url]);
+  Future<void> _checkAppUpdateSilently() async {
+    _lastUpdateCheckAt = DateTime.now();
+    final outcome = await AppUpdateService.checkForUpdateDetailed();
+    final info = outcome.info;
+    if (mounted && info != null && info.hasUpdate) {
+      setState(() {
+        _availableUpdate = info;
+        _dismissedUpdate = false;
+      });
+      if (_notifiedVersionTag != info.latestVersion) {
+        _notifiedVersionTag = info.latestVersion;
+        SystemBridge.showAndroidUpdateNotification(
+          title: 'chessD ${info.latestVersion} disponível!',
+          body: 'Nova versão lançada com melhorias. Toque para baixar agora.',
+          url: info.downloadUrl,
+        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final messenger = ScaffoldMessenger.maybeOf(context);
+          messenger?.hideCurrentSnackBar();
+          messenger?.showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: ThemeController.instance.surfaceElevatedColor,
+              duration: const Duration(seconds: 6),
+              content: Text(
+                'Atualização ${info.latestVersion} disponível para baixar!',
+                style: TextStyle(color: ThemeController.instance.textPrimary, fontWeight: FontWeight.w600),
+              ),
+              action: SnackBarAction(
+                label: 'Baixar',
+                textColor: AppColors.chessGreen,
+                onPressed: () => _openUpdateUrl(info.downloadUrl),
+              ),
+            ),
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _openUpdateUrl(String url) async {
+    final opened = await SystemBridge.openExternalUrl(url);
+    if (!opened && mounted) {
+      await Clipboard.setData(ClipboardData(text: url));
+      if (!mounted) return;
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Link da atualização copiado para a área de transferência!'),
+        ),
+      );
     }
   }
 
@@ -115,7 +166,8 @@ class _MainHubScreenState extends State<MainHubScreen> {
       ),
     );
 
-    final info = await AppUpdateService.checkForUpdate();
+    final outcome = await AppUpdateService.checkForUpdateDetailed();
+    final info = outcome.info;
     if (!mounted) return;
     Navigator.of(context).pop();
 
@@ -124,8 +176,16 @@ class _MainHubScreenState extends State<MainHubScreen> {
         _availableUpdate = info;
         _dismissedUpdate = false;
       });
+      if (_notifiedVersionTag != info.latestVersion) {
+        _notifiedVersionTag = info.latestVersion;
+        SystemBridge.showAndroidUpdateNotification(
+          title: 'chessD ${info.latestVersion} disponível!',
+          body: 'Nova versão lançada com melhorias. Toque para baixar agora.',
+          url: info.downloadUrl,
+        );
+      }
       _showUpdateDialog(info);
-    } else {
+    } else if (info != null) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -150,10 +210,49 @@ class _MainHubScreenState extends State<MainHubScreen> {
           ],
         ),
       );
+    } else {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: ThemeController.instance.surfaceColor,
+          title: Row(
+            children: [
+              const Icon(Icons.wifi_off_rounded, color: AppColors.chessGold, size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Falha ao Verificar',
+                  style: TextStyle(color: ThemeController.instance.textPrimary, fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            outcome.errorMessage ?? 'Não foi possível consultar o GitHub no momento. Verifique sua conexão com a internet.',
+            style: TextStyle(color: ThemeController.instance.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Fechar', style: TextStyle(color: ThemeController.instance.textSecondary)),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _openUpdateUrl(AppUpdateService.repoReleasesPage);
+              },
+              icon: const Icon(Icons.open_in_new, size: 16, color: Colors.white),
+              label: const Text('Abrir Releases', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.chessGreen),
+            ),
+          ],
+        ),
+      );
     }
   }
 
   void _showUpdateDialog(AppUpdateInfo info) {
+    final notesPreview = info.releaseNotes.trim();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -166,20 +265,38 @@ class _MainHubScreenState extends State<MainHubScreen> {
             Text('Nova Atualização!', style: TextStyle(color: ThemeController.instance.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Versão ${info.latestVersion} disponível para download.',
-              style: TextStyle(color: ThemeController.instance.textPrimary, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Versão instalada: ${info.currentVersion}\nNovidades e correções estão prontas para serem instaladas no seu dispositivo.',
-              style: TextStyle(color: ThemeController.instance.textSecondary, fontSize: 13),
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Versão ${info.latestVersion} disponível para download.',
+                style: TextStyle(color: ThemeController.instance.textPrimary, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Versão instalada: ${info.currentVersion}\nNovidades e correções estão prontas para serem instaladas no seu dispositivo.',
+                style: TextStyle(color: ThemeController.instance.textSecondary, fontSize: 13),
+              ),
+              if (notesPreview.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: ThemeController.instance.surfaceElevatedColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: ThemeController.instance.borderColor),
+                  ),
+                  child: Text(
+                    notesPreview.length > 350 ? '${notesPreview.substring(0, 350)}...' : notesPreview,
+                    style: TextStyle(color: ThemeController.instance.textSecondary, fontSize: 11.5, height: 1.35),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -202,6 +319,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     castServer.stop();
     super.dispose();
   }
@@ -455,6 +573,29 @@ class _MainHubScreenState extends State<MainHubScreen> {
           ],
         ),
         actions: [
+          if (_availableUpdate != null)
+            IconButton(
+              tooltip: 'Atualização ${_availableUpdate!.latestVersion} disponível',
+              onPressed: () => _showUpdateDialog(_availableUpdate!),
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Icons.notifications_active_rounded, color: AppColors.chessGold),
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: const BoxDecoration(
+                        color: AppColors.chessGreen,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           IconButton(
             icon: Icon(Icons.palette_outlined, color: theme.accentColor),
             tooltip: 'Personalização Visual',
@@ -1503,6 +1644,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
           icon: Icons.help_outline,
           title: 'Central de Ajuda & Regras FIDE',
           subtitle: 'Manual oficial de regras, FAQs e guia de operação',
+          alwaysEnabled: true,
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HelpSupportScreen()));
           },
@@ -1510,7 +1652,11 @@ class _MainHubScreenState extends State<MainHubScreen> {
         _buildMenuItem(
           icon: Icons.system_update_alt,
           title: 'Verificar Atualizações',
-          subtitle: 'Versão instalada: ${AppUpdateService.currentVersion}',
+          subtitle: _availableUpdate != null
+              ? 'Nova versão ${_availableUpdate!.latestVersion} disponível!'
+              : 'Versão instalada: ${AppUpdateService.currentVersion}',
+          alwaysEnabled: true,
+          highlightBadge: _availableUpdate?.latestVersion,
           onTap: _manualCheckForUpdate,
         ),
       ],
@@ -1522,6 +1668,8 @@ class _MainHubScreenState extends State<MainHubScreen> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    bool alwaysEnabled = false,
+    String? highlightBadge,
   }) {
     final theme = ThemeController.instance;
     return Padding(
@@ -1530,23 +1678,42 @@ class _MainHubScreenState extends State<MainHubScreen> {
         color: theme.surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: theme.borderColor),
+          side: BorderSide(color: highlightBadge != null ? AppColors.chessGreen : theme.borderColor),
         ),
         clipBehavior: Clip.antiAlias,
         child: ListTile(
-          onTap: isRustReady ? onTap : null,
+          onTap: (alwaysEnabled || isRustReady) ? onTap : null,
           leading: Container(
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: AppColors.chessGreen.withOpacity(0.15),
+              color: (highlightBadge != null ? AppColors.chessGold : AppColors.chessGreen).withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: AppColors.chessGreen, size: 20),
+            child: Icon(icon, color: highlightBadge != null ? AppColors.chessGold : AppColors.chessGreen, size: 20),
           ),
           title: Text(title, style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
-          subtitle: Text(subtitle, style: TextStyle(color: theme.textSecondary, fontSize: 11)),
-          trailing: Icon(Icons.chevron_right, color: theme.textSecondary.withOpacity(0.5), size: 20),
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(
+              color: highlightBadge != null ? AppColors.chessGreen : theme.textSecondary,
+              fontSize: 11,
+              fontWeight: highlightBadge != null ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          trailing: highlightBadge != null
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.chessGreen,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    highlightBadge,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                  ),
+                )
+              : Icon(Icons.chevron_right, color: theme.textSecondary.withOpacity(0.5), size: 20),
         ),
       ),
     );

@@ -3,9 +3,9 @@
 Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica de partidas, desenvolvida com Flutter 3.47 e Rust 1.96. Totalmente offline, gratuito e sem cobrança por recursos analíticos.
 
 **Central de Downloads e Releases Oficiais:**
-- **Versao Mais Recente (v1.0.4):** [Acessar Release v1.0.4 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.4)
-- **Download Direto para Android (APK):** [chessD-v1.0.4-android.apk](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-android.apk)
-- **Download Direto para Windows (64-bit):** [chessD-v1.0.4-windows-x64.zip](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-windows-x64.zip)
+- **Versao Mais Recente (v1.0.5):** [Acessar Release v1.0.5 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.5)
+- **Download Direto para Android (APK):** [chessD-v1.0.5-android.apk](https://github.com/derbitr/chessD/releases/download/v1.0.5/chessD-v1.0.5-android.apk)
+- **Download Direto para Windows (64-bit):** [chessD-v1.0.5-windows-x64.zip](https://github.com/derbitr/chessD/releases/download/v1.0.5/chessD-v1.0.5-windows-x64.zip)
 - **Catalogo Completo de Releases:** [github.com/derbitr/chessD/releases](https://github.com/derbitr/chessD/releases)
 
 ---
@@ -264,10 +264,10 @@ O projeto adota uma política de tolerância zero a falhas silenciosas (*silent 
 | Suite de Testes            | Testes Executados | Status     |
 +----------------------------+-------------------+------------+
 | Rust Core Unit & Property  | 38                | 38 Aprovados|
-| Flutter Integration & UI   | 48                | 48 Aprovados|
-| TOTAL                      | 86                | 86 Aprovados|
+| Flutter Integration & UI   | 53                | 53 Aprovados|
+| TOTAL                      | 91                | 91 Aprovados|
 +----------------------------+-------------------+------------+
-Tempo total de execucao dos 86 testes: < 12 segundos.
+Tempo total de execucao dos 91 testes: < 12 segundos.
 ```
 
 Principais cenários cobertos:
@@ -302,6 +302,7 @@ chessD/
 |   |   |-- chess_rust_ffi.dart          # Conector C-ABI FFI de baixo overhead
 |   |   |-- p2p_multiplayer_service.dart # Gerenciador de partidas online P2P e SNTP
 |   |   |-- player_stats_service.dart    # Persistencia JSON real de Elo, trilha e partidas
+|   |   |-- system_bridge.dart           # Canal nativo Android/Desktop (URL Intent & Notificacoes)
 |   |   |-- user_mistakes_service.dart   # Registro real de gafes para Treino de Erros
 |   |   `-- wifi_cast_server.dart        # Servidor HTTP local de espelhamento
 |   `-- ui/
@@ -345,7 +346,7 @@ chessD/
 |-- scripts/
 |   |-- build_windows.ps1           # Script PowerShell para compilacao Windows
 |   `-- build_android.ps1           # Script PowerShell para compilacao Android
-|-- test/                           # Bateria de testes automatizados Flutter (48 testes)
+|-- test/                           # Bateria de testes automatizados Flutter (53 testes)
 `-- README.md                       # Documentacao tecnica integral
 ```
 
@@ -434,7 +435,24 @@ O arquivo gerado estará localizado em:
 Todas as versões binárias compiladas, pacotes de instalação e notas técnicas estão disponíveis na central oficial de distribuição:
 [Acessar Central de Releases no GitHub](https://github.com/derbitr/chessD/releases)
 
-### 8.1 Release v1.0.4 - [Ver Release v1.0.4 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.4)
+### 8.1 Release v1.0.5 - [Ver Release v1.0.5 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.5)
+
+#### Destaques da Versao v1.0.5:
+- **Correcao Integral das Notificacoes de Atualizacao OTA (Android e Windows):** Adicao da permissao `INTERNET`, `ACCESS_NETWORK_STATE` e `POST_NOTIFICATIONS` no `AndroidManifest.xml` de producao (que anteriormente bloqueavam qualquer checagem HTTP na versao Release do Android).
+- **Notificacao Nativa na Barra do Telefone & Abertura Direta de Download:** Novo canal nativo Android (`MainActivity.kt` + `SystemBridge`) exibindo alerta real no sistema operacional com abertura direta via `Intent.ACTION_VIEW` ao tocar na notificacao ou em "Baixar Agora".
+- **Indicador Persistente Multi-Aba & Feedback Honesto de Rede:** Novo icone de notificacao com badge no topo da AppBar em todas as abas, SnackBar de alerta imediato, badge na aba Mais e fallback automatico via redirecionamento HTTP (`/releases/latest`) caso a API REST do GitHub sofra limite de taxa (403/429).
+- **Qualidade e Estabilidade:** 91/91 testes automatizados aprovados (38 Rust + 53 Flutter, incluindo servidor HTTP local de testes OTA) e `flutter analyze` sem avisos.
+
+#### Artefatos Disponiveis e Somas de Verificacao (v1.0.5):
+
+| Artefato | Plataforma | Descricao | SHA-256 |
+| :--- | :--- | :--- | :--- |
+| [`chessD-v1.0.5-windows-x64.zip`](https://github.com/derbitr/chessD/releases/download/v1.0.5/chessD-v1.0.5-windows-x64.zip) | Windows 64-bit | Pacote portatil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execucao | [Disponivel no GitHub Releases](https://github.com/derbitr/chessD/releases/tag/v1.0.5) |
+| [`chessD-v1.0.5-android.apk`](https://github.com/derbitr/chessD/releases/download/v1.0.5/chessD-v1.0.5-android.apk) | Android 8.0+ | Pacote de instalacao APK multi-ABI (`arm64-v8a`, `armeabi-v7a`, `x86_64`) compilado via GitHub Actions | [Disponivel no GitHub Releases](https://github.com/derbitr/chessD/releases/tag/v1.0.5) |
+
+---
+
+### 8.2 Release v1.0.4 - [Ver Release v1.0.4 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.4)
 
 #### Destaques da Versao v1.0.4:
 - **Identidade Visual Unificada Chess.com:** Substituicao de tons ciano/teal residuais pela paleta verde e grafite canonica (#81B64C / #262522 / #2B2927) e troca de caracteres tipograficos de peao por icones vetoriais `PawnLogo` em pass-and-play e torneios.
@@ -452,7 +470,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.2 Release v1.0.3 - [Ver Release v1.0.3 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.3)
+### 8.3 Release v1.0.3 - [Ver Release v1.0.3 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.3)
 
 #### Destaques da Versao v1.0.3:
 - **Redesign Visual Canonico Inspirado no Chess.com:** Layout mobile com BottomNavigationBar de 5 abas (Inicio, Problemas, Aprender, Assistir, Mais), cards panoramicos de alta fidelidade e botao hero Verde FIDE (#81B64C).
@@ -472,7 +490,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.3 Release v1.0.2 - [Ver Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
+### 8.4 Release v1.0.2 - [Ver Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
 
 #### Destaques da Versão v1.0.2:
 - **Multiplayer Online P2P com Custo Zero:** Arquitetura híbrida com canais diretos WebRTC (STUN Google) e sinalização em Cloudflare Workers (Edge Serverless gratuito). Partidas online em tempo real com latência reduzida e custo zero de hospedagem.
@@ -491,7 +509,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.4 Release v1.0.1 - [Ver Release v1.0.1 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.1)
+### 8.5 Release v1.0.1 - [Ver Release v1.0.1 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.1)
 
 #### Destaques da Versão v1.0.1:
 - **Atualização Canônica de Marca:** Transição definitiva do nome do projeto e repositório para **chessD**.
@@ -502,7 +520,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.5 Release v1.0.0 - Lançamento Inicial Canônico
+### 8.6 Release v1.0.0 - Lançamento Inicial Canônico
 
 #### Destaques da Versão v1.0.0:
 - Implementação inicial completa de todas as 7 fases do plano mestre do motor de xadrez.
@@ -518,7 +536,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.6 Instruções de Instalação e Execução
+### 8.7 Instruções de Instalação e Execução
 
 #### No Windows:
 1. Extraia o conteúdo do arquivo `.zip` da release em uma pasta de sua preferência.
