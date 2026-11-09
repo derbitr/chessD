@@ -448,7 +448,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 | Artefato | Plataforma | Descricao | SHA-256 |
 | :--- | :--- | :--- | :--- |
 | [`chessD-v1.0.4-windows-x64.zip`](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-windows-x64.zip) | Windows 64-bit | Pacote portatil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execucao | `317C43C1743375AA7E8A4DEAB8008CF6F1D64E9CE8793E6CE0C8A85A11B80714` |
-| [`chessD-v1.0.4-android.apk`](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-android.apk) | Android 8.0+ | Pacote de instalacao APK multi-ABI (`arm64-v8a`, `armeabi-v7a`, `x86_64`) compilado via GitHub Actions | [Disponivel no GitHub Releases](https://github.com/derbitr/chessD/releases/tag/v1.0.4) |
+| [`chessD-v1.0.4-android.apk`](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-android.apk) | Android 8.0+ | Pacote de instalacao APK multi-ABI (`arm64-v8a`, `armeabi-v7a`, `x86_64`) compilado via GitHub Actions | `8C5C48E10D27490D1AF44A5FD670A983667A009CEB148822D2F9C753B907501A` |
 
 ---
 
