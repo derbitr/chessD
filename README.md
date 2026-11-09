@@ -3,8 +3,8 @@
 Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica de partidas, desenvolvida com Flutter 3.47 e Rust 1.96. Totalmente offline, gratuito e sem cobrança por recursos analíticos.
 
 **Central de Downloads e Releases Oficiais:**
-- **Versao Mais Recente (v1.0.2):** [Acessar Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
-- **Download Direto para Windows (64-bit):** [chessD-v1.0.2-windows-x64.zip](https://github.com/derbitr/chessD/releases/download/v1.0.2/chessD-v1.0.2-windows-x64.zip)
+- **Versao Mais Recente (v1.0.3):** [Acessar Release v1.0.3 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.3)
+- **Download Direto para Windows (64-bit):** [chessD-v1.0.3-windows-x64.zip](https://github.com/derbitr/chessD/releases/download/v1.0.3/chessD-v1.0.3-windows-x64.zip)
 - **Catalogo Completo de Releases:** [github.com/derbitr/chessD/releases](https://github.com/derbitr/chessD/releases)
 
 ---
@@ -425,7 +425,27 @@ O arquivo gerado estará localizado em:
 Todas as versões binárias compiladas, pacotes de instalação e notas técnicas estão disponíveis na central oficial de distribuição:
 [Acessar Central de Releases no GitHub](https://github.com/derbitr/chessD/releases)
 
-### 8.1 Release v1.0.2 - [Ver Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
+### 8.1 Release v1.0.3 - [Ver Release v1.0.3 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.3)
+
+#### Destaques da Versao v1.0.3:
+- **Redesign Visual Canonico Inspirado no Chess.com:** Layout mobile com BottomNavigationBar de 5 abas (Inicio, Problemas, Aprender, Assistir, Mais), cards panoramicos de alta fidelidade e botao hero Verde FIDE (#81B64C).
+- **Tokens Espectrais do Dossie RPA 10 (Dark Slate):** Implementacao de paleta escura (#262522, #2B2927, #383634, #413D3B) com tipografia de alto contraste (#F7F7F6) e legibilidade otimizada.
+- **Logotipo Vetorial do Peao Integrado:** Novo PawnLogo com badge de status aplicado na AppBar, nos dialogos de sistema e nos seletores de navegacao.
+- **Segmentacao de Torneios por Elo & Bots no Swiss Pairing:** Sistema de torneios com tres faixas de Elo (Iniciante 300-800, Intermediario 800-1500, Avancado 1500+). Eliminacao de bots de alto nivel em categorias de entrada e suporte a disputa direta contra bots ao clicar em partidas em andamento.
+- **Bot Studio com Presets Calibrados e Baloes de Dialogo:** Inclusao de novos bots com personalidades distintas (Marko 300, Jamie 650, Luna 1000, Troy 1300, TJ 1800) e baloes de fala dinamicos.
+- **Servico de Notificacao e Verificacao OTA (AppUpdateService):** Verificacao automatica e silenciosa de novas releases do GitHub Releases, com baloes de aviso interativos no topo da aba Inicio e checagem manual na aba Mais.
+- **Estabilidade do Renderizador Desktop:** Desativacao explicita de renderizadores instaveis no Windows runner, assegurando inicializacao imediata e estavel via Skia sem falhas de tela preta.
+
+#### Artefatos Disponiveis e Somas de Verificacao (v1.0.3):
+
+| Artefato | Plataforma | Descricao | SHA-256 |
+| :--- | :--- | :--- | :--- |
+| [`chessD-v1.0.3-windows-x64.zip`](https://github.com/derbitr/chessD/releases/download/v1.0.3/chessD-v1.0.3-windows-x64.zip) | Windows 64-bit | Pacote portatil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execucao | `D1A10429D634823554404545D1D3908416B348D806B1B1DCD6C904BBB5EDF742` |
+| `chessD-v1.0.3-android.apk` | Android 8.0+ | Pacote de instalacao APK para dispositivos moveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | [Disponivel no GitHub Releases](https://github.com/derbitr/chessD/releases/tag/v1.0.3) |
+
+---
+
+### 8.2 Release v1.0.2 - [Ver Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
 
 #### Destaques da Versão v1.0.2:
 - **Multiplayer Online P2P com Custo Zero:** Arquitetura híbrida com canais diretos WebRTC (STUN Google) e sinalização em Cloudflare Workers (Edge Serverless gratuito). Partidas online em tempo real com latência reduzida e custo zero de hospedagem.
@@ -444,7 +464,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.2 Release v1.0.1 - [Ver Release v1.0.1 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.1)
+### 8.3 Release v1.0.1 - [Ver Release v1.0.1 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.1)
 
 #### Destaques da Versão v1.0.1:
 - **Atualização Canônica de Marca:** Transição definitiva do nome do projeto e repositório para **chessD**.
@@ -455,7 +475,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.3 Release v1.0.0 - Lançamento Inicial Canônico
+### 8.4 Release v1.0.0 - Lançamento Inicial Canônico
 
 #### Destaques da Versão v1.0.0:
 - Implementação inicial completa de todas as 7 fases do plano mestre do motor de xadrez.
@@ -471,7 +491,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.4 Instruções de Instalação e Execução
+### 8.5 Instruções de Instalação e Execução
 
 #### No Windows:
 1. Extraia o conteúdo do arquivo `.zip` da release em uma pasta de sua preferência.
