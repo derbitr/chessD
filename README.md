@@ -4,6 +4,7 @@ Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica 
 
 **Central de Downloads e Releases Oficiais:**
 - **Versao Mais Recente (v1.0.3):** [Acessar Release v1.0.3 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.3)
+- **Download Direto para Android (APK):** [chessD-v1.0.3-android.apk](https://github.com/derbitr/chessD/releases/download/v1.0.3/chessD-v1.0.3-android.apk)
 - **Download Direto para Windows (64-bit):** [chessD-v1.0.3-windows-x64.zip](https://github.com/derbitr/chessD/releases/download/v1.0.3/chessD-v1.0.3-windows-x64.zip)
 - **Catalogo Completo de Releases:** [github.com/derbitr/chessD/releases](https://github.com/derbitr/chessD/releases)
 
@@ -441,7 +442,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 | Artefato | Plataforma | Descricao | SHA-256 |
 | :--- | :--- | :--- | :--- |
 | [`chessD-v1.0.3-windows-x64.zip`](https://github.com/derbitr/chessD/releases/download/v1.0.3/chessD-v1.0.3-windows-x64.zip) | Windows 64-bit | Pacote portatil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execucao | `D1A10429D634823554404545D1D3908416B348D806B1B1DCD6C904BBB5EDF742` |
-| `chessD-v1.0.3-android.apk` | Android 8.0+ | Pacote de instalacao APK para dispositivos moveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | [Disponivel no GitHub Releases](https://github.com/derbitr/chessD/releases/tag/v1.0.3) |
+| [`chessD-v1.0.3-android.apk`](https://github.com/derbitr/chessD/releases/download/v1.0.3/chessD-v1.0.3-android.apk) | Android 8.0+ | Pacote de instalacao APK para dispositivos moveis (ABIs: arm64-v8a, armeabi-v7a e x86_64) | `C0CB546DC5F4AFC27B8D0F72711FFE73E3432C90EAE07E5D1D2B1B28FC4C3414` |
 
 ---
 
