@@ -846,7 +846,7 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                                           border: Border.all(color: Colors.black26),
                                         ),
                                         child: const Center(
-                                          child: Text('♙', style: TextStyle(fontSize: 16, color: Colors.black87)),
+                                          child: PawnLogo(size: 16, color: Colors.black87, hasBadge: false),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -932,7 +932,7 @@ class _TournamentManagerScreenState extends State<TournamentManagerScreen> {
                                           border: Border.all(color: Colors.white30),
                                         ),
                                         child: const Center(
-                                          child: Text('♟', style: TextStyle(fontSize: 16, color: Colors.white)),
+                                          child: PawnLogo(size: 16, color: Colors.white, hasBadge: false),
                                         ),
                                       ),
                                     ],

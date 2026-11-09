@@ -89,7 +89,7 @@ class _PuzzleLadderScreenState extends State<PuzzleLadderScreen> {
             widget.ffi.freeGame(_game);
             final nextP = ladderSequence[currentIdx];
             _game = widget.ffi.newGameFromFen(nextP.fen);
-            feedbackText = 'Acertou! Problema ${currentIdx + 1} (Elo ${nextP.rating}) 🔥 Streak $streak';
+            feedbackText = 'Acertou! Problema ${currentIdx + 1} (Elo ${nextP.rating}) - Sequência $streak';
           });
         } else {
           // Zerou a sequência!

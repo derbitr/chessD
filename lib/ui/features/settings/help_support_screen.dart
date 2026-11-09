@@ -142,7 +142,7 @@ class HelpSupportScreen extends StatelessWidget {
           _buildHelpCard(
             theme: theme,
             title: 'O aplicativo funciona sem conexão com a internet?',
-            content: 'Sim! 16 dos 17 modos (Puzzles, Trilha Duolingo, Batalha contra Bots, Análise CAPS2, Torneios Suíço, SM-2, Fischer Random e Pass & Play) rodam 100% offline no seu dispositivo através do núcleo nativo em Rust. Apenas o Multiplayer Online exige rede para conectar os dois aparelhos.',
+            content: 'Sim! 16 dos 17 modos (Puzzles, Trilha de Maestria, Batalha contra Bots, Análise CAPS2, Torneios Suíço, SM-2, Fischer Random e Pass & Play) rodam 100% offline no seu dispositivo através do núcleo nativo em Rust. Apenas o Multiplayer Online exige rede para conectar os dois aparelhos.',
           ),
           _buildHelpCard(
             theme: theme,

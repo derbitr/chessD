@@ -132,10 +132,20 @@ enum PieceVisualTheme {
 }
 
 enum AccentVisualTheme {
+  chessGreen(
+    id: 'chessGreen',
+    name: 'Verde Chess.com',
+    color: Color(0xFF81B64C),
+  ),
+  gold(
+    id: 'gold',
+    name: 'Dourado Torneio',
+    color: Color(0xFFE5A823),
+  ),
   cyan(
     id: 'cyan',
     name: 'Ciano Elétrico',
-    color: Color(0xFF00E5FF),
+    color: Color(0xFF00B4D8),
   ),
   emerald(
     id: 'emerald',
@@ -182,7 +192,7 @@ class ThemeController extends ChangeNotifier {
   AppThemeMode _themeMode = AppThemeMode.dark;
   BoardVisualTheme _boardTheme = BoardVisualTheme.tournamentGreen;
   PieceVisualTheme _pieceTheme = PieceVisualTheme.classicStaunton;
-  AccentVisualTheme _accentTheme = AccentVisualTheme.cyan;
+  AccentVisualTheme _accentTheme = AccentVisualTheme.chessGreen;
 
   AppThemeMode get themeMode => _themeMode;
   BoardVisualTheme get boardTheme => _boardTheme;
@@ -236,7 +246,7 @@ class ThemeController extends ChangeNotifier {
     _themeMode = AppThemeMode.dark;
     _boardTheme = BoardVisualTheme.tournamentGreen;
     _pieceTheme = PieceVisualTheme.classicStaunton;
-    _accentTheme = AccentVisualTheme.cyan;
+    _accentTheme = AccentVisualTheme.chessGreen;
     notifyListeners();
   }
 

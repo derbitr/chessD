@@ -20,7 +20,7 @@ class AppUpdateInfo {
 }
 
 class AppUpdateService {
-  static const String currentVersion = 'v1.0.3';
+  static const String currentVersion = 'v1.0.4';
   static const String repoApiUrl = 'https://api.github.com/repos/derbitr/chessD/releases/latest';
   static const String repoReleasesPage = 'https://github.com/derbitr/chessD/releases';
 

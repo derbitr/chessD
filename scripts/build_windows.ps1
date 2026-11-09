@@ -1,6 +1,6 @@
 # Script de compilacao para Windows do chessD
 param (
-    [string]$Version = "v1.0.3"
+    [string]$Version = "v1.0.4"
 )
 $ErrorActionPreference = "Stop"
 

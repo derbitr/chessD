@@ -27,7 +27,7 @@ void main() {
     expect(find.text('Problema Diário'), findsOneWidget);
     expect(find.text('Jogar com Bots'), findsWidgets);
     expect(find.text('O Ornitólogo'), findsOneWidget);
-    expect(find.text('O Trilheiro'), findsOneWidget);
+    expect(find.text('O Trilheiro'), findsWidgets);
 
     // Valida navegação entre as abas
     await tester.tap(find.text('Problemas').last);

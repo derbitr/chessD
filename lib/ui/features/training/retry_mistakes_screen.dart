@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/services/user_mistakes_service.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
 import 'package:chess_d/ui/core/chess_balloon.dart';
@@ -20,95 +21,106 @@ class RetryMistakesScreen extends StatefulWidget {
 }
 
 class _RetryMistakesScreenState extends State<RetryMistakesScreen> {
-  final List<Map<String, dynamic>> mistakeDrills = [
-    {
-      'id': 'mistake_1',
-      'title': 'Gafe: Peça Pendurada na Abertura',
-      'fen': 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR w KQkq - 2 3',
-      'blunder_played_uci': 'd2d3',
-      'best_move_uci': 'd1h5',
-      'explanation': 'Você jogou passivo com d3. O golpe ativo era Dh5 com ameaça de mate em f7!',
-      'is_solved': false,
-    },
-    {
-      'id': 'mistake_2',
-      'title': 'Erro: Mate de Corredor Desperdiçado',
-      'fen': '6k1/5ppp/8/8/8/8/1R3PPP/2R3K1 w - - 0 1',
-      'blunder_played_uci': 'b2b3',
-      'best_move_uci': 'c1c8',
-      'explanation': 'A oitava fila estava totalmente vulnerável. Tc8# aplicava xeque-mate imediato.',
-      'is_solved': false,
-    },
-    {
-      'id': 'mistake_3',
-      'title': 'Imprecisão: Garfo de Cavalo Perdido',
-      'fen': 'r1b1k2r/pppp1ppp/8/2b1n3/3PP3/2N5/PPP2PPP/R1B1KB1R w KQkq - 0 1',
-      'blunder_played_uci': 'f1e2',
-      'best_move_uci': 'd4e5',
-      'explanation': 'Capturar o cavalo em e5 com dxe5 ganha uma peça inteira.',
-      'is_solved': false,
-    },
-  ];
-
   int currentIdx = 0;
-  late Pointer<Void> _game;
+  Pointer<Void>? _game;
   bool isCompleted = false;
-  String feedbackText = 'Encontre o lance que você deixou passar na partida!';
-  Color feedbackColor = AppColors.primaryCyan;
+  String feedbackText = 'Encontre o melhor lance para superar o erro!';
+  Color feedbackColor = AppColors.chessGreen;
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentDrill();
+    _initDrillState();
+  }
+
+  void _initDrillState() {
+    final list = UserMistakesService.mistakes;
+    if (list.isNotEmpty) {
+      if (currentIdx >= list.length) currentIdx = 0;
+      _loadCurrentDrill();
+    } else {
+      if (_game != null) {
+        widget.ffi.freeGame(_game!);
+        _game = null;
+      }
+    }
   }
 
   void _loadCurrentDrill() {
-    final drill = mistakeDrills[currentIdx];
+    final list = UserMistakesService.mistakes;
+    if (list.isEmpty) return;
+
+    if (_game != null) {
+      widget.ffi.freeGame(_game!);
+    }
+
+    final drill = list[currentIdx];
     _game = widget.ffi.newGameFromFen(drill['fen'] as String);
     isCompleted = false;
-    feedbackText = 'Você jogou ${drill['blunder_played_uci']}. Encontre o lance correto!';
-    feedbackColor = AppColors.primaryCyan;
+    feedbackText = 'Você jogou ${drill['blunder_played_uci']}. Encontre a refutação correta!';
+    feedbackColor = AppColors.chessGreen;
   }
 
   @override
   void dispose() {
-    widget.ffi.freeGame(_game);
+    if (_game != null) {
+      widget.ffi.freeGame(_game!);
+      _game = null;
+    }
     super.dispose();
   }
 
   void _onMovePlayed(String uci) {
-    if (isCompleted) return;
+    if (isCompleted || _game == null) return;
 
-    final drill = mistakeDrills[currentIdx];
+    final list = UserMistakesService.mistakes;
+    if (list.isEmpty) return;
+
+    final drill = list[currentIdx];
     final expected = drill['best_move_uci'] as String;
 
     if (uci == expected) {
       setState(() {
         isCompleted = true;
-        drill['is_solved'] = true;
+        UserMistakesService.markSolved(drill['id'] as String);
         feedbackText = 'Acertou em cheio! ${drill['explanation']}';
-        feedbackColor = AppColors.accentEmerald;
+        feedbackColor = AppColors.chessGreen;
       });
     } else {
       setState(() {
         feedbackText = 'Ainda não é o melhor lance. Tente novamente!';
         feedbackColor = AppColors.moveBlunder;
+        if (_game != null) {
+          widget.ffi.freeGame(_game!);
+        }
+        _game = widget.ffi.newGameFromFen(drill['fen'] as String);
       });
     }
   }
 
   void _nextDrill() {
-    widget.ffi.freeGame(_game);
+    final list = UserMistakesService.mistakes;
+    if (list.isEmpty) return;
+
     setState(() {
-      currentIdx = (currentIdx + 1) % mistakeDrills.length;
+      currentIdx = (currentIdx + 1) % list.length;
+      _loadCurrentDrill();
+    });
+  }
+
+  void _loadDemoMistakes() {
+    setState(() {
+      UserMistakesService.loadSampleDrills();
+      currentIdx = 0;
       _loadCurrentDrill();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final drill = mistakeDrills[currentIdx];
-    final solvedCount = mistakeDrills.where((d) => d['is_solved'] == true).count();
+    final list = UserMistakesService.mistakes;
+    final solvedCount = UserMistakesService.solvedCount;
+    final totalCount = UserMistakesService.totalCount;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -130,83 +142,137 @@ class _RetryMistakesScreenState extends State<RetryMistakesScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.surfaceElevated),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('ERROS SUPERADOS', style: AppTypography.labelSmall),
-                            const SizedBox(height: 4),
-                            Text(
-                              '$solvedCount / ${mistakeDrills.length}',
-                              style: AppTypography.displayMedium.copyWith(color: AppColors.secondaryAmber),
-                            ),
-                          ],
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.skip_next, color: AppColors.primaryCyan),
-                          tooltip: 'Próximo Erro',
-                          onPressed: _nextDrill,
+                        const Text('ERROS SUPERADOS', style: AppTypography.labelSmall),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$solvedCount / $totalCount',
+                          style: AppTypography.displayMedium.copyWith(color: AppColors.chessGold),
                         ),
                       ],
                     ),
-                    const Divider(height: 16),
-                    Text(
-                      drill['title'] as String,
-                      style: AppTypography.titleMedium.copyWith(color: AppColors.primaryCyan),
-                    ),
+                    if (list.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.skip_next, color: AppColors.chessGreen),
+                        tooltip: 'Próximo Erro',
+                        onPressed: _nextDrill,
+                      ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 12),
-
-              // Tabuleiro
-              ChessBoardWidget(
-                ffi: widget.ffi,
-                game: _game,
-                onMovePlayed: isCompleted ? null : _onMovePlayed,
-              ),
-
-              const SizedBox(height: 12),
-
-              // Balão de Feedback no Padrão Chess.com
-              ChessBalloonCard(
-                type: isCompleted ? BalloonType.success : BalloonType.coach,
-                tail: BubbleTail.top,
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                avatar: isCompleted
-                    ? const Icon(Icons.check_circle, color: AppColors.accentEmerald, size: 24)
-                    : const PawnLogo(size: 22, color: AppColors.secondaryAmber, hasBadge: false),
-                title: isCompleted ? 'Erro Superado!' : 'Treinador de Erros',
-                message: feedbackText,
-              ),
-
               const SizedBox(height: 16),
 
-              if (isCompleted)
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: _nextDrill,
-                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
-                    label: const Text('PRÓXIMO ERRO A CORRIGIR', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryCyan),
+              if (list.isEmpty)
+                // Estado Vazio Confiável e Honesto (Zero Erros se Nunca Jogou)
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.surfaceElevated),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: AppColors.chessGreen.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.verified_outlined, color: AppColors.chessGreen, size: 36),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nenhum Erro Registrado!',
+                        style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Você ainda não possui erros ou gafes em partidas salvas neste dispositivo. Conforme você disputar partidas contra bots, amigos ou resolver quebra-cabeças, suas gafes serão salvas automaticamente aqui para você praticar e superá-las.',
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      OutlinedButton.icon(
+                        onPressed: _loadDemoMistakes,
+                        icon: const Icon(Icons.school, size: 18, color: AppColors.chessGreen),
+                        label: const Text('Carregar Exercícios de Demonstração', style: TextStyle(color: AppColors.chessGreen, fontWeight: FontWeight.bold)),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.chessGreen),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else ...[
+                // Informação do Erro Atual
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    list[currentIdx]['title'] as String? ?? 'Gafe a Corrigir',
+                    style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
+
+                const SizedBox(height: 12),
+
+                // Tabuleiro Interativo
+                if (_game != null)
+                  ChessBoardWidget(
+                    ffi: widget.ffi,
+                    game: _game!,
+                    onMovePlayed: isCompleted ? null : _onMovePlayed,
+                  ),
+
+                const SizedBox(height: 12),
+
+                // Balão de Feedback no Padrão Chess.com
+                ChessBalloonCard(
+                  type: isCompleted ? BalloonType.success : BalloonType.coach,
+                  tail: BubbleTail.top,
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  avatar: isCompleted
+                      ? const Icon(Icons.check_circle, color: AppColors.chessGreen, size: 24)
+                      : const PawnLogo(size: 22, color: AppColors.chessGold, hasBadge: false),
+                  title: isCompleted ? 'Erro Superado!' : 'Treinador de Erros',
+                  message: feedbackText,
+                ),
+
+                const SizedBox(height: 16),
+
+                if (isCompleted)
+                  SizedBox(
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: _nextDrill,
+                      icon: const Icon(Icons.arrow_forward, color: Colors.white),
+                      label: const Text('PRÓXIMO ERRO A CORRIGIR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.chessGreen,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
       ),
     );
   }
-}
-
-extension _IterableCount<T> on Iterable<T> {
-  int count() => length;
 }

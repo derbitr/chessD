@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:chess_d/data/models/lesson_module.dart';
 import 'package:chess_d/data/repositories/puzzle_repository.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/services/user_mistakes_service.dart';
 import 'package:chess_d/ui/features/learning/learning_track_screen.dart';
 import 'package:chess_d/ui/features/training/infinite_puzzles_screen.dart';
 import 'package:chess_d/ui/features/training/puzzle_ladder_screen.dart';
+import 'package:chess_d/ui/features/training/retry_mistakes_screen.dart';
 
 void main() {
   late ChessRustFfi ffi;
@@ -41,10 +43,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Trilha de Maestria (Estilo Duolingo)'), findsOneWidget);
-      expect(find.text('Módulo 1: Fundamentos'), findsOneWidget);
+      expect(find.text('Trilha de Maestria'), findsOneWidget);
+      expect(find.text('Módulo 1: Fundamentos do Tabuleiro'), findsOneWidget);
       expect(find.text('O que é o Xeque-Mate'), findsOneWidget);
-      expect(find.byIcon(Icons.star), findsWidgets);
+      expect(find.byIcon(Icons.star_rounded), findsWidgets);
     });
   });
 
@@ -86,7 +88,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Quebra-Cabeças Infinitos'), findsOneWidget);
-      expect(find.text('SEU RATING TÁTICO'), findsOneWidget);
+      expect(find.text('PROGRESSO NA TRILHA'), findsOneWidget);
       expect(find.byIcon(Icons.local_fire_department), findsOneWidget);
     });
   });
@@ -118,6 +120,27 @@ void main() {
       expect(find.byIcon(Icons.favorite), findsNWidgets(3));
       expect(find.text('VIDAS RESTANTES'), findsOneWidget);
       expect(find.text('0 / 0'), findsOneWidget);
+    });
+  });
+
+  group('Treino de Erros Próprios - Integridade Inicial', () {
+    testWidgets('RetryMistakesScreen inicia sem erros fictícios quando o usuário nunca jogou', (tester) async {
+      UserMistakesService.clearAll();
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RetryMistakesScreen(ffi: ffi),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Treino de Erros Próprios'), findsOneWidget);
+      expect(find.text('ERROS SUPERADOS'), findsOneWidget);
+      expect(find.text('0 / 0'), findsOneWidget);
+      expect(find.text('Nenhum Erro Registrado!'), findsOneWidget);
     });
   });
 }

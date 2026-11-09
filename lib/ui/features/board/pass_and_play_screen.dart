@@ -210,7 +210,7 @@ class _PassAndPlayScreenState extends State<PassAndPlayScreen> {
                                 border: Border.all(color: Colors.white24),
                               ),
                               child: const Center(
-                                child: Text('♟', style: TextStyle(fontSize: 22, color: Colors.white)),
+                                child: PawnLogo(size: 22, color: Color(0xFF1E293B), hasBadge: false),
                               ),
                             ),
                             const SizedBox(width: 10),

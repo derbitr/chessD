@@ -1,10 +1,13 @@
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:chess_d/data/models/lesson_module.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/services/player_stats_service.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
 import 'package:chess_d/ui/core/chess_balloon.dart';
 import 'package:chess_d/ui/core/pawn_logo.dart';
+import 'package:chess_d/ui/core/trail_connector.dart';
 import '../board/chess_board_widget.dart';
 
 class LearningTrackScreen extends StatefulWidget {
@@ -21,7 +24,12 @@ class LearningTrackScreen extends StatefulWidget {
 
 class _LearningTrackScreenState extends State<LearningTrackScreen> {
   final List<LessonModule> modules = LessonModule.getCuratedCurriculum();
-  final Map<String, int> completedStars = {'step_1_1_checkmate': 3}; // Inicial com primeiro nó completo
+
+  @override
+  void initState() {
+    super.initState();
+    PlayerStatsService.instance.loadSync();
+  }
 
   void _openLesson(LessonStep step) {
     showModalBottomSheet(
@@ -35,9 +43,7 @@ class _LearningTrackScreenState extends State<LearningTrackScreen> {
         ffi: widget.ffi,
         step: step,
         onCompleted: (stars) {
-          setState(() {
-            completedStars[step.id] = stars;
-          });
+          PlayerStatsService.instance.recordLessonCompletion(step.id, stars);
           Navigator.of(ctx).pop();
         },
       ),
@@ -46,128 +52,202 @@ class _LearningTrackScreenState extends State<LearningTrackScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Trilha de Maestria (Estilo Duolingo)', style: AppTypography.titleLarge),
-        backgroundColor: AppColors.surface,
-      ),
-      body: SafeArea(
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-          itemCount: modules.length,
-          itemBuilder: (context, modIdx) {
-            final module = modules[modIdx];
+    return AnimatedBuilder(
+      animation: PlayerStatsService.instance,
+      builder: (context, _) {
+        final completedStars = PlayerStatsService.instance.lessonStars;
+        final int totalStars = completedStars.values.fold(0, (sum, val) => sum + val);
+        final int totalSteps = modules.fold(0, (sum, m) => sum + m.steps.length);
+        final int maxStars = totalSteps * 3;
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Header do Módulo
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primaryCyan.withOpacity(0.4)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.military_tech, color: AppColors.secondaryAmber, size: 24),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(module.title, style: AppTypography.titleLarge),
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: const Text('Trilha de Maestria', style: AppTypography.titleLarge),
+            backgroundColor: AppColors.surface,
+            actions: [
+              Container(
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceElevated,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star_rounded, color: AppColors.chessGold, size: 20),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$totalStars / $maxStars',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          body: SafeArea(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              itemCount: modules.length,
+              itemBuilder: (context, modIdx) {
+                final module = modules[modIdx];
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Banner do Módulo
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.chessGreen.withOpacity(0.35), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(module.description, style: AppTypography.bodyMedium),
-                    ],
-                  ),
-                ),
-
-                // Trilha Senoidal Vertical de Nós
-                ...List.generate(module.steps.length, (stepIdx) {
-                  final step = module.steps[stepIdx];
-                  final stars = completedStars[step.id] ?? 0;
-                  final isUnlocked = stepIdx == 0 || (completedStars[module.steps[stepIdx - 1].id] ?? 0) > 0;
-
-                  // Deslocamento senoidal lateral (Duolingo winding curve)
-                  final double xOffset = (stepIdx % 2 == 0) ? -35.0 : 35.0;
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Transform.translate(
-                      offset: Offset(xOffset, 0),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          GestureDetector(
-                            onTap: isUnlocked ? () => _openLesson(step) : null,
-                            child: Container(
-                              width: 74,
-                              height: 74,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isUnlocked
-                                    ? (stars > 0 ? AppColors.accentEmerald : AppColors.primaryCyan)
-                                    : AppColors.surfaceElevated,
-                                border: Border.all(
-                                  color: isUnlocked ? Colors.white : AppColors.textMuted,
-                                  width: 3.5,
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.chessGreen.withOpacity(0.18),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                                boxShadow: [
-                                  if (isUnlocked)
-                                    BoxShadow(
-                                      color: (stars > 0 ? AppColors.accentEmerald : AppColors.primaryCyan).withOpacity(0.4),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                ],
+                                child: const Icon(Icons.military_tech_rounded, color: AppColors.chessGreen, size: 24),
                               ),
-                              child: Icon(
-                                isUnlocked
-                                    ? (stars > 0 ? Icons.check : Icons.star)
-                                    : Icons.lock,
-                                color: isUnlocked ? Colors.black : AppColors.textMuted,
-                                size: 36,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            step.title,
-                            style: AppTypography.labelLarge.copyWith(
-                              color: isUnlocked ? AppColors.textPrimary : AppColors.textMuted,
-                            ),
-                          ),
-                          if (stars > 0)
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: List.generate(
-                                3,
-                                (i) => Icon(
-                                  Icons.star,
-                                  size: 16,
-                                  color: i < stars ? AppColors.secondaryAmber : AppColors.textMuted,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  module.title,
+                                  style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.2),
                                 ),
                               ),
-                            ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(module.description, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
                         ],
                       ),
                     ),
-                  );
-                }),
 
-                const Divider(color: AppColors.surfaceElevated, height: 48, thickness: 2),
-              ],
-            );
-          },
-        ),
-      ),
+                    // Trilha de Passos com conectores e curva senoidal contínua
+                    ...List.generate(module.steps.length, (stepIdx) {
+                      final step = module.steps[stepIdx];
+                      final stars = completedStars[step.id] ?? 0;
+                      // Primeiro passo de cada módulo ou passo anterior concluído desbloqueia
+                      final isUnlocked = stepIdx == 0 || (completedStars[module.steps[stepIdx - 1].id] ?? 0) > 0;
+                      const offsets = [-46.0, 0.0, 46.0, 0.0];
+                      final double xOffset = offsets[stepIdx % offsets.length];
+                      final double prevOffset = stepIdx > 0 ? offsets[(stepIdx - 1) % offsets.length] : 0.0;
+
+                      return Column(
+                        children: [
+                          if (stepIdx > 0)
+                            TrailConnectorSegment(
+                              fromOffsetX: prevOffset,
+                              toOffsetX: xOffset,
+                              isCompleted: stars > 0,
+                              height: 32,
+                            ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Transform.translate(
+                              offset: Offset(xOffset, 0),
+                              child: Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: isUnlocked ? () => _openLesson(step) : null,
+                                    child: Container(
+                                      width: 72,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: isUnlocked
+                                            ? (stars > 0 ? AppColors.chessGreen : AppColors.surfaceElevated)
+                                            : AppColors.surfaceElevated.withOpacity(0.5),
+                                        border: Border.all(
+                                          color: isUnlocked
+                                              ? (stars > 0 ? Colors.white : AppColors.chessGreen)
+                                              : AppColors.textMuted.withOpacity(0.3),
+                                          width: 3.5,
+                                        ),
+                                        boxShadow: [
+                                          if (isUnlocked)
+                                            BoxShadow(
+                                              color: AppColors.chessGreen.withOpacity(0.35),
+                                              blurRadius: 14,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        isUnlocked
+                                            ? (stars > 0 ? Icons.check_rounded : Icons.play_arrow_rounded)
+                                            : Icons.lock_outline_rounded,
+                                        color: isUnlocked
+                                            ? (stars > 0 ? Colors.white : AppColors.chessGreen)
+                                            : AppColors.textMuted,
+                                        size: 34,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  SizedBox(
+                                    width: 140,
+                                    child: Text(
+                                      step.title,
+                                      style: AppTypography.labelLarge.copyWith(
+                                        color: isUnlocked ? AppColors.textPrimary : AppColors.textMuted,
+                                        fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: List.generate(
+                                        3,
+                                        (i) => Icon(
+                                          Icons.star_rounded,
+                                          size: 16,
+                                          color: i < stars ? AppColors.chessGold : AppColors.textMuted.withOpacity(0.4),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+
+                    const Divider(color: AppColors.surfaceElevated, height: 44, thickness: 1.5),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -190,45 +270,67 @@ class _LessonBottomSheet extends StatefulWidget {
 class _LessonBottomSheetState extends State<_LessonBottomSheet> {
   int currentExerciseIdx = 0;
   bool isTheoryPhase = true;
-  late dynamic _exGame;
+  Pointer<Void>? _exGame;
+  String feedbackMessage = '';
+  bool isWrongMove = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.step.exercises.isNotEmpty) {
-      _exGame = widget.ffi.newGameFromFen(widget.step.exercises[0].initialFen);
+    _loadExerciseGame();
+  }
+
+  void _loadExerciseGame() {
+    if (widget.step.exercises.isNotEmpty && currentExerciseIdx < widget.step.exercises.length) {
+      if (_exGame != null) {
+        widget.ffi.freeGame(_exGame!);
+      }
+      _exGame = widget.ffi.newGameFromFen(widget.step.exercises[currentExerciseIdx].initialFen);
+      feedbackMessage = widget.step.exercises[currentExerciseIdx].instruction;
+      isWrongMove = false;
     }
   }
 
   @override
   void dispose() {
-    if (widget.step.exercises.isNotEmpty) {
-      widget.ffi.freeGame(_exGame);
+    if (_exGame != null) {
+      widget.ffi.freeGame(_exGame!);
+      _exGame = null;
     }
     super.dispose();
   }
 
   void _onMovePlayed(String uci) {
+    if (widget.step.exercises.isEmpty) return;
     final currentEx = widget.step.exercises[currentExerciseIdx];
+
     if (currentEx.solutionUciMoves.contains(uci)) {
-      // Acertou o lance!
+      // Lance correto!
       if (currentExerciseIdx + 1 < widget.step.exercises.length) {
         setState(() {
           currentExerciseIdx += 1;
-          widget.ffi.freeGame(_exGame);
-          _exGame = widget.ffi.newGameFromFen(widget.step.exercises[currentExerciseIdx].initialFen);
+          _loadExerciseGame();
         });
       } else {
-        // Concluiu todos os exercícios!
         widget.onCompleted(3);
       }
+    } else {
+      // Lance incorreto: reinicia o tabuleiro do exercício para nova tentativa
+      setState(() {
+        isWrongMove = true;
+        feedbackMessage = 'Lance incorreto! Dica: ${currentEx.hint}';
+        if (_exGame != null) {
+          widget.ffi.freeGame(_exGame!);
+        }
+        _exGame = widget.ffi.newGameFromFen(currentEx.initialFen);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final exercises = widget.step.exercises;
-    final currentEx = exercises.isNotEmpty ? exercises[currentExerciseIdx] : null;
+    final currentEx = exercises.isNotEmpty && currentExerciseIdx < exercises.length ? exercises[currentExerciseIdx] : null;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -254,7 +356,7 @@ class _LessonBottomSheetState extends State<_LessonBottomSheet> {
           const SizedBox(height: 16),
           Row(
             children: [
-              const PawnLogo(size: 26, color: AppColors.secondaryAmber, hasBadge: true),
+              const PawnLogo(size: 26, color: AppColors.chessGreen, hasBadge: true),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -275,10 +377,10 @@ class _LessonBottomSheetState extends State<_LessonBottomSheet> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryCyan.withOpacity(0.18),
+                  color: AppColors.chessGreen.withOpacity(0.18),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.menu_book, color: AppColors.primaryCyan, size: 18),
+                child: const Icon(Icons.menu_book, color: AppColors.chessGreen, size: 18),
               ),
               title: 'Fundamento Teórico',
               message: widget.step.shortTheory,
@@ -293,50 +395,54 @@ class _LessonBottomSheetState extends State<_LessonBottomSheet> {
                     isTheoryPhase = false;
                   });
                 },
-                icon: const Icon(Icons.play_arrow, color: Colors.black),
+                icon: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
                 label: const Text(
                   'COMEÇAR EXERCÍCIOS PRÁTICOS',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryCyan,
+                  backgroundColor: AppColors.chessGreen,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
             ),
           ] else if (currentEx != null) ...[
-            // Barra de progresso dos exercícios
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: (currentExerciseIdx + 1) / exercises.length,
                 backgroundColor: AppColors.surfaceElevated,
-                color: AppColors.accentEmerald,
+                color: AppColors.chessGreen,
                 minHeight: 6,
               ),
             ),
             const SizedBox(height: 12),
             ChessBalloonCard(
-              type: BalloonType.neutral,
+              type: isWrongMove ? BalloonType.error : BalloonType.neutral,
               margin: EdgeInsets.zero,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              avatar: const Icon(Icons.flag, color: AppColors.accentEmerald, size: 20),
+              avatar: Icon(
+                isWrongMove ? Icons.error_outline : Icons.flag_rounded,
+                color: isWrongMove ? AppColors.moveBlunder : AppColors.chessGreen,
+                size: 20,
+              ),
               title: 'Desafio ${currentExerciseIdx + 1} de ${exercises.length}',
-              message: currentEx.instruction,
+              message: feedbackMessage,
             ),
             const SizedBox(height: 14),
-            ChessBoardWidget(
-              ffi: widget.ffi,
-              game: _exGame,
-              onMovePlayed: _onMovePlayed,
-            ),
+            if (_exGame != null)
+              ChessBoardWidget(
+                ffi: widget.ffi,
+                game: _exGame!,
+                onMovePlayed: _onMovePlayed,
+              ),
             const SizedBox(height: 12),
             ChessBalloonCard(
               type: BalloonType.hint,
               tail: BubbleTail.bottom,
               margin: EdgeInsets.zero,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              avatar: const Icon(Icons.lightbulb, color: AppColors.secondaryAmber, size: 20),
+              avatar: const Icon(Icons.lightbulb_outline_rounded, color: AppColors.chessGold, size: 20),
               title: 'Dica do Mestre',
               message: currentEx.hint,
             ),

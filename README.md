@@ -3,9 +3,9 @@
 Plataforma autônoma de xadrez, estudo tático gamificado e perícia analítica de partidas, desenvolvida com Flutter 3.47 e Rust 1.96. Totalmente offline, gratuito e sem cobrança por recursos analíticos.
 
 **Central de Downloads e Releases Oficiais:**
-- **Versao Mais Recente (v1.0.3):** [Acessar Release v1.0.3 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.3)
-- **Download Direto para Android (APK):** [chessD-v1.0.3-android.apk](https://github.com/derbitr/chessD/releases/download/v1.0.3/chessD-v1.0.3-android.apk)
-- **Download Direto para Windows (64-bit):** [chessD-v1.0.3-windows-x64.zip](https://github.com/derbitr/chessD/releases/download/v1.0.3/chessD-v1.0.3-windows-x64.zip)
+- **Versao Mais Recente (v1.0.4):** [Acessar Release v1.0.4 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.4)
+- **Download Direto para Android (APK):** [chessD-v1.0.4-android.apk](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-android.apk)
+- **Download Direto para Windows (64-bit):** [chessD-v1.0.4-windows-x64.zip](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-windows-x64.zip)
 - **Catalogo Completo de Releases:** [github.com/derbitr/chessD/releases](https://github.com/derbitr/chessD/releases)
 
 ---
@@ -122,17 +122,21 @@ A comunicação entre a camada Dart e a biblioteca nativa Rust (`rust_core.dll` 
 - Mapeamento em tempo real do controle territorial e da tensão de ataque sobre cada casa.
 - Sobreposição gráfica translúcida indicando zonas de pressão mútua e fraquezas estruturais.
 
-### 4.9 Trilha Gamificada de Aprendizado (Estilo Duolingo)
-- Currículo pedagógico estruturado em seções progressivas:
-  1. Fundamentos e Movimento das Peças.
-  2. Táticas Essenciais (Garfos, Cravadas, Espetos e Descobertas).
-  3. Finais Básicos e Estrutura de Peões.
-  4. Mestria Posicional e Profilaxia.
-- Visualização em nós interconectados por curvas senoidais, bloqueio de módulos dependentes e premiação de até 3 estrelas por lição concluída.
+### 4.9 Trilha de Maestria Gamificada
+- Currículo pedagógico estruturado em 7 módulos progressivos (do mate básico à profilaxia de Grande Mestre):
+  1. Módulo 1: Fundamentos do Tabuleiro.
+  2. Módulo 2: Garfo, Cravada e Espeto.
+  3. Módulo 3: Temas Táticos Avançados (Mate Sufocado, Descoberta e Desvio).
+  4. Módulo 4: Abertura e Desenvolvimento Rápido.
+  5. Módulo 5: Controle Estratégico e Meio-Jogo.
+  6. Módulo 6: Finais Clássicos de Reis e Peões.
+  7. Módulo 7: Profilaxia e Maestria.
+- Visualização em nós interconectados por curvas senoidais contínuas (`TrailConnectorSegment`), bloqueio de módulos dependentes, reset automático de lances incorretos e premiação persistente de até 3 estrelas por lição concluída (`PlayerStatsService`).
 
-### 4.10 Puzzles Táticos Infinitos e Puzzle Ladder
-- Modo contínuo com geração sob demanda a partir de banco compactado.
-- Sistema competitivo *Puzzle Ladder* com 3 vidas (strikes), bônus de pontuação por sequência consecutiva de acertos (*streak multiplier*) e atualização dinâmica de Elo tático.
+### 4.10 Trilha de Quebra-Cabeças (40 Marcos) e Treino de Erros Reais
+- Trilha tática contínua com 40 marcos em 5 estágios interconectados em curva S com botões chanfrados estilo Chess.com.
+- Integração direta com o modo contínuo em banco compactado, *Puzzle Ladder* com 3 vidas (strikes), bônus de sequência (*streak multiplier*) e Elo tático dinâmico persistido localmente.
+- **Treino de Erros Próprios (`UserMistakesService`):** Inicia estritamente zerado (`0 / 0`) sem dados fictícios para novos jogadores e registra automaticamente apenas erros reais cometidos em puzzles ou partidas (com carregamento opcional de exercícios de demonstração).
 
 ### 4.11 Sistema de Revisão de Partidas CAPS2 (Chess Accuracy Percentage System)
 - Avaliação qualitativa de partidas lance a lance, convertendo a vantagem estática em probabilidade de vitória esperada através da curva logística:
@@ -260,10 +264,10 @@ O projeto adota uma política de tolerância zero a falhas silenciosas (*silent 
 | Suite de Testes            | Testes Executados | Status     |
 +----------------------------+-------------------+------------+
 | Rust Core Unit & Property  | 38                | 38 Aprovados|
-| Flutter Integration & UI   | 45                | 45 Aprovados|
-| TOTAL                      | 83                | 83 Aprovados|
+| Flutter Integration & UI   | 48                | 48 Aprovados|
+| TOTAL                      | 86                | 86 Aprovados|
 +----------------------------+-------------------+------------+
-Tempo total de execucao dos 83 testes: < 12 segundos.
+Tempo total de execucao dos 86 testes: < 12 segundos.
 ```
 
 Principais cenários cobertos:
@@ -294,17 +298,21 @@ chessD/
 |-- lib/
 |   |-- main.dart                   # Hub principal com todos os 18 recursos e modos
 |   |-- services/
-|   |   |-- chess_rust_ffi.dart     # Conector C-ABI FFI de baixo overhead
+|   |   |-- app_update_service.dart      # Verificacao OTA via GitHub Releases
+|   |   |-- chess_rust_ffi.dart          # Conector C-ABI FFI de baixo overhead
 |   |   |-- p2p_multiplayer_service.dart # Gerenciador de partidas online P2P e SNTP
-|   |   `-- wifi_cast_server.dart   # Servidor HTTP local de espelhamento
+|   |   |-- player_stats_service.dart    # Persistencia JSON real de Elo, trilha e partidas
+|   |   |-- user_mistakes_service.dart   # Registro real de gafes para Treino de Erros
+|   |   `-- wifi_cast_server.dart        # Servidor HTTP local de espelhamento
 |   `-- ui/
 |       |-- core/
-|       |   `-- chess_theme.dart    # ThemeController, 8 paletas de tabuleiro, 5 de pecas, 6 acentos
+|       |   |-- chess_theme.dart         # ThemeController, 8 paletas de tabuleiro, 5 de pecas, 6 acentos
+|       |   `-- trail_connector.dart     # Curvas senoidais continuas em CustomPainter
 |       |-- features/
-|       |   |-- analysis/           # Telas de Revisao CAPS2 e Auditoria Anti-Cheat
-|       |   |-- board/              # Widget de Tabuleiro reativo com preview e Notacao
-|       |   |-- game/               # Modos Pass&Play, Batalha com Bots e Studio
-|       |   |-- learning/           # Trilha Gamificada Duolingo
+|       |   |-- analysis/                # Telas de Revisao CAPS2 e Auditoria Anti-Cheat
+|       |   |-- board/                   # Widget de Tabuleiro reativo com preview e Notacao
+|       |   |-- game/                    # Modos Pass&Play, Batalha com Bots e Studio
+|       |   |-- learning/                # Trilha de Maestria Gamificada (7 Modulos)
 |       |   |-- multiplayer/        # Tela de Partida Online P2P e Lobby
 |       |   |-- openings/           # Explorador Canonico de Aberturas ECO
 |       |   |-- puzzles/            # Puzzles Infinitos e Puzzle Ladder
@@ -337,7 +345,7 @@ chessD/
 |-- scripts/
 |   |-- build_windows.ps1           # Script PowerShell para compilacao Windows
 |   `-- build_android.ps1           # Script PowerShell para compilacao Android
-|-- test/                           # Bateria de testes automatizados Flutter (44 testes)
+|-- test/                           # Bateria de testes automatizados Flutter (48 testes)
 `-- README.md                       # Documentacao tecnica integral
 ```
 
@@ -426,7 +434,25 @@ O arquivo gerado estará localizado em:
 Todas as versões binárias compiladas, pacotes de instalação e notas técnicas estão disponíveis na central oficial de distribuição:
 [Acessar Central de Releases no GitHub](https://github.com/derbitr/chessD/releases)
 
-### 8.1 Release v1.0.3 - [Ver Release v1.0.3 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.3)
+### 8.1 Release v1.0.4 - [Ver Release v1.0.4 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.4)
+
+#### Destaques da Versao v1.0.4:
+- **Identidade Visual Unificada Chess.com:** Substituicao de tons ciano/teal residuais pela paleta verde e grafite canonica (#81B64C / #262522 / #2B2927) e troca de caracteres tipograficos de peao por icones vetoriais `PawnLogo` em pass-and-play e torneios.
+- **Trilha de Quebra-Cabecas em 40 Marcos:** A aba Problemas agora exibe uma trilha de aventura com 40 nos organizados em 5 estagios tematicos conectados por curvas senoidais continuas (`TrailConnectorSegment`) e botoes chanfrados, integrada diretamente ao progresso em `InfinitePuzzlesScreen`.
+- **Trilha de Maestria Expandida (7 Modulos):** Remocao de referencias ao termo Duolingo no titulo e na central de ajuda, ampliacao para 7 modulos completos com FENs e solucoes validadas em FFI nativo e reset automatico do tabuleiro ao errar lances.
+- **Zero Dados Ficticios (Stats Reais & Treino de Erros Proprios):** Estatisticas da tela inicial (`0 resolvidos`, historico de partidas vazio, Elo inicial real) e `RetryMistakesScreen` (`0 / 0`, "Nenhum Erro Registrado!") agora refletem apenas acoes e erros reais persistidos em JSON (`PlayerStatsService` e `UserMistakesService`).
+- **Qualidade e Estabilidade:** 86/86 testes automatizados aprovados (38 Rust + 48 Flutter) e `flutter analyze` sem avisos.
+
+#### Artefatos Disponiveis e Somas de Verificacao (v1.0.4):
+
+| Artefato | Plataforma | Descricao | SHA-256 |
+| :--- | :--- | :--- | :--- |
+| [`chessD-v1.0.4-windows-x64.zip`](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-windows-x64.zip) | Windows 64-bit | Pacote portatil contendo `chessD.exe`, `rust_core.dll`, `flutter_windows.dll` e dados de execucao | `317C43C1743375AA7E8A4DEAB8008CF6F1D64E9CE8793E6CE0C8A85A11B80714` |
+| [`chessD-v1.0.4-android.apk`](https://github.com/derbitr/chessD/releases/download/v1.0.4/chessD-v1.0.4-android.apk) | Android 8.0+ | Pacote de instalacao APK multi-ABI (`arm64-v8a`, `armeabi-v7a`, `x86_64`) compilado via GitHub Actions | [Disponivel no GitHub Releases](https://github.com/derbitr/chessD/releases/tag/v1.0.4) |
+
+---
+
+### 8.2 Release v1.0.3 - [Ver Release v1.0.3 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.3)
 
 #### Destaques da Versao v1.0.3:
 - **Redesign Visual Canonico Inspirado no Chess.com:** Layout mobile com BottomNavigationBar de 5 abas (Inicio, Problemas, Aprender, Assistir, Mais), cards panoramicos de alta fidelidade e botao hero Verde FIDE (#81B64C).
@@ -446,7 +472,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.2 Release v1.0.2 - [Ver Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
+### 8.3 Release v1.0.2 - [Ver Release v1.0.2 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.2)
 
 #### Destaques da Versão v1.0.2:
 - **Multiplayer Online P2P com Custo Zero:** Arquitetura híbrida com canais diretos WebRTC (STUN Google) e sinalização em Cloudflare Workers (Edge Serverless gratuito). Partidas online em tempo real com latência reduzida e custo zero de hospedagem.
@@ -465,7 +491,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.3 Release v1.0.1 - [Ver Release v1.0.1 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.1)
+### 8.4 Release v1.0.1 - [Ver Release v1.0.1 no GitHub](https://github.com/derbitr/chessD/releases/tag/v1.0.1)
 
 #### Destaques da Versão v1.0.1:
 - **Atualização Canônica de Marca:** Transição definitiva do nome do projeto e repositório para **chessD**.
@@ -476,7 +502,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.4 Release v1.0.0 - Lançamento Inicial Canônico
+### 8.5 Release v1.0.0 - Lançamento Inicial Canônico
 
 #### Destaques da Versão v1.0.0:
 - Implementação inicial completa de todas as 7 fases do plano mestre do motor de xadrez.
@@ -492,7 +518,7 @@ Todas as versões binárias compiladas, pacotes de instalação e notas técnica
 
 ---
 
-### 8.5 Instruções de Instalação e Execução
+### 8.6 Instruções de Instalação e Execução
 
 #### No Windows:
 1. Extraia o conteúdo do arquivo `.zip` da release em uma pasta de sua preferência.

@@ -2,12 +2,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:chess_d/services/app_update_service.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/services/player_stats_service.dart';
+import 'package:chess_d/services/user_mistakes_service.dart';
 import 'package:chess_d/services/wifi_cast_server.dart';
 import 'package:chess_d/ui/core/chess_balloon.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
 import 'package:chess_d/ui/core/chess_theme.dart';
 import 'package:chess_d/ui/core/pawn_logo.dart';
+import 'package:chess_d/ui/core/trail_connector.dart';
 import 'package:chess_d/ui/features/board/coordinate_trainer.dart';
 import 'package:chess_d/ui/features/board/pass_and_play_screen.dart';
 import 'package:chess_d/ui/features/game/bot_game_screen.dart';
@@ -69,6 +72,8 @@ class _MainHubScreenState extends State<MainHubScreen> {
   void initState() {
     super.initState();
     castServer = WifiCastServer();
+    PlayerStatsService.instance.loadSync();
+    UserMistakesService.loadSync();
     _initRustCore();
     _checkAppUpdateSilently();
   }
@@ -102,7 +107,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
         backgroundColor: ThemeController.instance.surfaceColor,
         content: Row(
           children: [
-            const CircularProgressIndicator(color: Color(0xFF81B64C)),
+            const CircularProgressIndicator(color: AppColors.chessGreen),
             const SizedBox(width: 16),
             Text('Buscando atualizações...', style: TextStyle(color: ThemeController.instance.textPrimary)),
           ],
@@ -127,7 +132,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
           backgroundColor: ThemeController.instance.surfaceColor,
           title: Row(
             children: [
-              const Icon(Icons.check_circle, color: Color(0xFF81B64C), size: 24),
+              const Icon(Icons.check_circle, color: AppColors.chessGreen, size: 24),
               const SizedBox(width: 8),
               Text('Versão Mais Recente', style: TextStyle(color: ThemeController.instance.textPrimary, fontSize: 18)),
             ],
@@ -139,7 +144,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
           actions: [
             ElevatedButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF81B64C)),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.chessGreen),
               child: const Text('Entendido', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -156,7 +161,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const PawnLogo(size: 26, color: Color(0xFF81B64C), hasBadge: true),
+            const PawnLogo(size: 26, color: AppColors.chessGreen, hasBadge: true),
             const SizedBox(width: 10),
             Text('Nova Atualização!', style: TextStyle(color: ThemeController.instance.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
           ],
@@ -188,7 +193,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
             },
             icon: const Icon(Icons.download, size: 16, color: Colors.white),
             label: const Text('Baixar Agora', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF81B64C)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.chessGreen),
           ),
         ],
       ),
@@ -254,8 +259,8 @@ class _MainHubScreenState extends State<MainHubScreen> {
                 _buildPlayOption(
                   icon: Icons.smart_toy,
                   title: 'Partida contra Bot',
-                  subtitle: 'Jogue contra bots calibrados de Elo 300 a 2400',
-                  color: const Color(0xFF81B64C),
+                  subtitle: 'Jogue contra robôs calibrados de Elo 300 a 2400',
+                  color: AppColors.chessGreen,
                   onTap: () {
                     Navigator.of(ctx).pop();
                     Navigator.of(context).push(
@@ -268,7 +273,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
                   icon: Icons.people_alt,
                   title: 'Pass & Play (2 Jogadores)',
                   subtitle: 'Dispute presencialmente no mesmo celular com relógio duplo',
-                  color: AppColors.secondaryAmber,
+                  color: AppColors.chessGold,
                   onTap: () {
                     Navigator.of(ctx).pop();
                     Navigator.of(context).push(
@@ -281,7 +286,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
                   icon: Icons.wifi,
                   title: 'Multiplayer Online P2P',
                   subtitle: 'Jogue online direto com outro jogador via WebRTC',
-                  color: AppColors.primaryCyan,
+                  color: AppColors.chessGreen,
                   onTap: () {
                     Navigator.of(ctx).pop();
                     Navigator.of(context).push(
@@ -304,6 +309,77 @@ class _MainHubScreenState extends State<MainHubScreen> {
                         builder: (_) => BotGameScreen(ffi: ffi!, botName: 'Xadrez 960 (#$seed)', botElo: 1200),
                       ),
                     ).then((_) => ffi!.freeGame(game960));
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPuzzlesModesModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: ThemeController.instance.surfaceColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        final theme = ThemeController.instance;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: theme.textSecondary.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Modos de Quebra-Cabeças',
+                  style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold, color: theme.textPrimary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 18),
+                _buildPlayOption(
+                  icon: Icons.trending_up,
+                  title: 'Escada de Problemas (Rush 3 Vidas)',
+                  subtitle: 'Modo sobrevivência: resolva problemas até errar 3 vezes',
+                  color: AppColors.chessGold,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => PuzzleLadderScreen(ffi: ffi!)));
+                  },
+                ),
+                const SizedBox(height: 10),
+                _buildPlayOption(
+                  icon: Icons.replay,
+                  title: 'Treino de Erros Próprios',
+                  subtitle: 'Refaça suas gafes reais de partidas e aprenda a refutação',
+                  color: AppColors.chessGreen,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => RetryMistakesScreen(ffi: ffi!)));
+                  },
+                ),
+                const SizedBox(height: 10),
+                _buildPlayOption(
+                  icon: Icons.speed,
+                  title: 'Treinador de Coordenadas',
+                  subtitle: 'Treine a visão instantânea de casas no tabuleiro em 30 segundos',
+                  color: AppColors.primaryCyan,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CoordinateTrainerScreen()));
                   },
                 ),
               ],
@@ -370,7 +446,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const PawnLogo(size: 26, color: Color(0xFF81B64C), hasBadge: true),
+            const PawnLogo(size: 26, color: AppColors.chessGreen, hasBadge: true),
             const SizedBox(width: 10),
             Text(
               'chessD',
@@ -392,14 +468,106 @@ class _MainHubScreenState extends State<MainHubScreen> {
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(
-          index: _currentTabIndex,
+        child: Column(
           children: [
-            _buildHomeTab(),
-            _buildPuzzlesTab(),
-            _buildLearnTab(),
-            _buildWatchTab(),
-            _buildMoreTab(),
+            Expanded(
+              child: IndexedStack(
+                index: _currentTabIndex,
+                children: [
+                  _buildHomeTab(),
+                  _buildPuzzlesTab(),
+                  _buildLearnTab(),
+                  _buildWatchTab(),
+                  _buildMoreTab(),
+                ],
+              ),
+            ),
+
+            // Botão Fixo Canônico "Jogar" acima da BottomNavigationBar (Aba Início)
+            if (_currentTabIndex == 0)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: _showPlayModal,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.chessGreen,
+                      foregroundColor: Colors.white,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.play_arrow_rounded, size: 28, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          'Jogar',
+                          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Barra Fixa Canônica "Resolva problemas" (Aba Problemas)
+            if (_currentTabIndex == 1)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: Row(
+                  children: [
+                    IconButton.filledTonal(
+                      onPressed: _showPuzzlesModesModal,
+                      icon: const Icon(Icons.tune_rounded, color: Colors.white, size: 22),
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.surfaceColor,
+                        padding: const EdgeInsets.all(14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: SizedBox(
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (ffi != null) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => InfinitePuzzlesScreen(
+                                    ffi: ffi!,
+                                    trailNode: PlayerStatsService.instance.puzzleTrailNode,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.chessGreen,
+                            foregroundColor: Colors.white,
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.play_arrow_rounded, size: 26, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                'Resolva problemas',
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -408,26 +576,29 @@ class _MainHubScreenState extends State<MainHubScreen> {
         onTap: (index) => setState(() => _currentTabIndex = index),
         type: BottomNavigationBarType.fixed,
         backgroundColor: theme.surfaceColor,
-        selectedItemColor: const Color(0xFF81B64C),
+        selectedItemColor: AppColors.chessGreen,
         unselectedItemColor: theme.textSecondary,
         selectedFontSize: 11,
         unselectedFontSize: 11,
         items: const [
           BottomNavigationBarItem(
             icon: PawnLogo(size: 22, color: Colors.grey, hasBadge: false),
-            activeIcon: PawnLogo(size: 22, color: Color(0xFF81B64C), hasBadge: false),
+            activeIcon: PawnLogo(size: 22, color: AppColors.chessGreen, hasBadge: false),
             label: 'Início',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.extension),
+            icon: Icon(Icons.extension_outlined),
+            activeIcon: Icon(Icons.extension),
             label: 'Problemas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.school),
+            icon: Icon(Icons.school_outlined),
+            activeIcon: Icon(Icons.school),
             label: 'Aprender',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.visibility),
+            icon: Icon(Icons.visibility_outlined),
+            activeIcon: Icon(Icons.visibility),
             label: 'Assistir',
           ),
           BottomNavigationBarItem(
@@ -439,23 +610,29 @@ class _MainHubScreenState extends State<MainHubScreen> {
     );
   }
 
-  // TAB 1: INÍCIO (Estilo Idêntico ao Chess.com Mobile)
+  // TAB 1: INÍCIO (Layout Oficial Idêntico ao Chess.com Mobile)
   Widget _buildHomeTab() {
     final theme = ThemeController.instance;
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      children: [
-        // Balão de Notificação de Atualização Disponível
+    return AnimatedBuilder(
+      animation: PlayerStatsService.instance,
+      builder: (context, _) {
+        final stats = PlayerStatsService.instance;
+        final history = stats.matchHistory;
+
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          children: [
+        // Balão de Atualização Silencioso
         if (_availableUpdate != null && !_dismissedUpdate)
           Padding(
             padding: const EdgeInsets.only(bottom: 14),
             child: ChessBalloonCard(
               type: BalloonType.coach,
               tail: BubbleTail.bottom,
-              avatar: const PawnLogo(size: 26, color: Color(0xFF81B64C), hasBadge: true),
+              avatar: const PawnLogo(size: 26, color: AppColors.chessGreen, hasBadge: true),
               title: 'Nova Versão Disponível (${_availableUpdate!.latestVersion})',
-              message: 'Uma atualização do chessD foi lançada no GitHub com novidades e melhorias.',
+              message: 'Uma atualização do chessD foi lançada no GitHub com novidades.',
               action: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -469,7 +646,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
                     icon: const Icon(Icons.download, size: 16, color: Colors.white),
                     label: const Text('Baixar Agora', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF81B64C),
+                      backgroundColor: AppColors.chessGreen,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -479,26 +656,113 @@ class _MainHubScreenState extends State<MainHubScreen> {
             ),
           ),
 
-        // Botão Hero Gigante "JOGAR" no Verde Canônico do Chess.com (#81B64C)
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: _showPlayModal,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF81B64C),
-              foregroundColor: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        // Card Panorâmico "Problemas"
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.surfaceColor,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: theme.borderColor),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.chessGreen.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.extension, color: AppColors.chessGreen, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Text('Problemas', style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold, color: theme.textPrimary)),
+                    ],
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (ffi != null) {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => InfinitePuzzlesScreen(ffi: ffi!)));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.chessGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text('Resolva!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Text('${stats.puzzlesSolved} resolvidos', style: TextStyle(color: theme.textSecondary, fontSize: 12)),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.chessGold.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text('Sequência: ${stats.puzzleStreak}', style: const TextStyle(color: AppColors.chessGold, fontWeight: FontWeight.bold, fontSize: 11)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // Card Problema Diário
+        InkWell(
+          onTap: () {
+            if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => InfinitePuzzlesScreen(ffi: ffi!)));
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: theme.surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: theme.borderColor),
             ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Row(
               children: [
-                Icon(Icons.play_arrow_rounded, size: 30, color: Colors.white),
-                SizedBox(width: 8),
-                Text(
-                  'Jogar',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: AppColors.chessGold.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.wb_sunny_rounded, color: AppColors.chessGold, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Problema Diário', style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                      const SizedBox(height: 2),
+                      Text('Desafio Tático de Hoje', style: TextStyle(color: theme.textSecondary, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.chessGreen,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text('Jogar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                 ),
               ],
             ),
@@ -507,99 +771,92 @@ class _MainHubScreenState extends State<MainHubScreen> {
 
         const SizedBox(height: 18),
 
-        // Carrossel de Destaques Rápidos (Problemas, Diário, Bots, Torneio)
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
+        // Confronto Recomendado
+        Text('Confronto Recomendado', style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: theme.textPrimary)),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: theme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: theme.borderColor),
+          ),
           child: Row(
             children: [
-              // Card Problemas
-              _buildFeaturedCard(
-                title: 'Problemas',
-                subtitle: 'Treino Tático Livre',
-                badgeText: 'Resolva!',
-                icon: Icons.extension,
-                accentColor: const Color(0xFF81B64C),
-                onTap: () {
-                  if (ffi != null) {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => InfinitePuzzlesScreen(ffi: ffi!)));
-                  }
-                },
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceElevated,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.smart_toy_rounded, color: AppColors.chessGreen, size: 26),
               ),
               const SizedBox(width: 12),
-
-              // Card Problema Diário
-              _buildFeaturedCard(
-                title: 'Problema Diário',
-                subtitle: 'Desafio de Hoje',
-                badgeText: 'Jogar',
-                icon: Icons.calendar_today,
-                accentColor: AppColors.secondaryAmber,
-                onTap: () {
-                  if (ffi != null) {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => InfinitePuzzlesScreen(ffi: ffi!)));
-                  }
-                },
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text('O Trilheiro', style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: AppColors.chessGreen.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text('BOT 600', style: TextStyle(color: AppColors.chessGreen, fontWeight: FontWeight.bold, fontSize: 10)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text('Casual & Amigável', style: TextStyle(color: theme.textSecondary, fontSize: 12)),
+                  ],
+                ),
               ),
-              const SizedBox(width: 12),
-
-              // Card Jogar com Bots
-              _buildFeaturedCard(
-                title: 'Jogar com Bots',
-                subtitle: 'Elo 300 a 2400',
-                badgeText: 'Desafiar',
-                icon: Icons.smart_toy,
-                accentColor: AppColors.primaryCyan,
-                onTap: () {
+              IconButton.filled(
+                onPressed: () {
                   if (ffi != null) {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => BotGameScreen(ffi: ffi!, botElo: 600, botName: 'O Trilheiro (600)')));
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => BotGameScreen(ffi: ffi!, botElo: 600, botName: 'O Trilheiro (600)')),
+                    );
                   }
                 },
-              ),
-              const SizedBox(width: 12),
-
-              // Card Torneios Suíços
-              _buildFeaturedCard(
-                title: 'Torneios',
-                subtitle: 'Com Níveis de Elo',
-                badgeText: 'Entrar',
-                icon: Icons.emoji_events,
-                accentColor: Colors.amberAccent,
-                onTap: () {
-                  if (ffi != null) {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => TournamentManagerScreen(ffi: ffi!)));
-                  }
-                },
+                icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
+                style: IconButton.styleFrom(backgroundColor: AppColors.chessGreen),
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 22),
+        const SizedBox(height: 18),
 
         // Grade de Ratings (Bullet, Blitz, Rápido, Diário)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Ratings', style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: theme.textPrimary)),
-            Text('Ver todos', style: TextStyle(color: theme.accentColor, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text('Ver todos', style: TextStyle(color: AppColors.chessGreen, fontSize: 12, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            _buildRatingItem(icon: Icons.flash_on, title: 'Bullet', rating: '1200', color: Colors.orange),
+            _buildRatingItem(icon: Icons.rocket_launch_rounded, title: 'Bullet', rating: '1200', color: AppColors.chessGold),
             const SizedBox(width: 8),
-            _buildRatingItem(icon: Icons.bolt, title: 'Blitz', rating: '1200', color: Colors.amber),
+            _buildRatingItem(icon: Icons.bolt_rounded, title: 'Blitz', rating: '1200', color: AppColors.chessGold),
             const SizedBox(width: 8),
-            _buildRatingItem(icon: Icons.timer, title: 'Rápido', rating: '1200', color: AppColors.accentEmerald),
+            _buildRatingItem(icon: Icons.timer_outlined, title: 'Rápido', rating: '1200', color: AppColors.chessGreen),
             const SizedBox(width: 8),
-            _buildRatingItem(icon: Icons.wb_sunny, title: 'Diário', rating: '1200', color: Colors.orangeAccent),
+            _buildRatingItem(icon: Icons.wb_sunny_outlined, title: 'Diário', rating: '1200', color: AppColors.chessGold),
           ],
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
 
-        // Lista de Bots com Elo (Idêntico à gravação do Chess.com: 300, 600, 1100, 1600)
+        // Jogar com Bots
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -613,67 +870,144 @@ class _MainHubScreenState extends State<MainHubScreen> {
         _buildBotChallengeItem(name: 'Estrategista', elo: 1100, personality: 'Equilibrado de Clube', personalityId: 0),
         _buildBotChallengeItem(name: 'Valkyrie', elo: 1200, personality: 'Agressiva & Tática', personalityId: 1),
         _buildBotChallengeItem(name: 'Mestre Local', elo: 1600, personality: 'Posicional & Firme', personalityId: 2),
+
+        const SizedBox(height: 20),
+
+        // Histórico de Partidas
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Histórico de partidas', style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: theme.textPrimary)),
+            Text('Precisão', style: TextStyle(color: theme.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (history.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.surfaceColor,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: theme.borderColor),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.history_toggle_off, color: theme.textSecondary.withOpacity(0.6), size: 28),
+                const SizedBox(height: 8),
+                Text(
+                  'Nenhuma partida registrada ainda',
+                  style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Toque em Jogar para iniciar seu histórico e análise de precisão CAPS2.',
+                  style: TextStyle(color: theme.textSecondary, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          )
+        else ...[
+          ...history.take(5).map(
+            (match) => InkWell(
+              onTap: () {
+                if (ffi != null && match.movesUci.isNotEmpty) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => GameReviewScreen(
+                        ffi: ffi!,
+                        movesPlayedUci: match.movesUci,
+                        playerColor: match.playerColor,
+                      ),
+                    ),
+                  );
+                }
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: _buildHistoryItem(
+                opponent: match.opponent,
+                isWin: match.isWin,
+                isDraw: match.isDraw,
+                precision: match.precision,
+              ),
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 12),
+        OutlinedButton(
+          onPressed: () {
+            if (ffi != null) {
+              final sampleMoves = history.isNotEmpty && history.first.movesUci.isNotEmpty
+                  ? history.first.movesUci
+                  : const ['e2e4', 'e7e5', 'g1f3', 'd7d6', 'd2d4'];
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => GameReviewScreen(
+                    ffi: ffi!,
+                    movesPlayedUci: sampleMoves,
+                    playerColor: history.isNotEmpty ? history.first.playerColor : 'white',
+                  ),
+                ),
+              );
+            }
+          },
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: theme.borderColor),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: Text('Revisar Última Análise', style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold)),
+        ),
+
+        const SizedBox(height: 16),
       ],
+    );
+      },
     );
   }
 
-  Widget _buildFeaturedCard({
-    required String title,
-    required String subtitle,
-    required String badgeText,
-    required IconData icon,
-    required Color accentColor,
-    required VoidCallback onTap,
+  Widget _buildHistoryItem({
+    required String opponent,
+    required bool isWin,
+    required bool isDraw,
+    required String precision,
   }) {
     final theme = ThemeController.instance;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 170,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: theme.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.borderColor),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(theme.isDark ? 0.2 : 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.borderColor),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.smart_toy_outlined, color: Colors.grey, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(opponent, style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: isWin
+                  ? AppColors.chessGreen.withOpacity(0.2)
+                  : (isDraw ? Colors.grey.withOpacity(0.2) : AppColors.moveBlunder.withOpacity(0.2)),
+              borderRadius: BorderRadius.circular(6),
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: accentColor, size: 22),
-            ),
-            const SizedBox(height: 10),
-            Text(title, style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
-            const SizedBox(height: 2),
-            Text(subtitle, style: TextStyle(color: theme.textSecondary, fontSize: 11)),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF81B64C),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                badgeText,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+            child: Text(
+              isWin ? '+' : (isDraw ? '=' : '-'),
+              style: TextStyle(
+                color: isWin ? AppColors.chessGreen : (isDraw ? Colors.grey : AppColors.moveBlunder),
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 14),
+          Text(precision, style: TextStyle(color: theme.textSecondary, fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
       ),
     );
   }
@@ -695,7 +1029,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 20),
+            Icon(icon, color: color, size: 22),
             const SizedBox(height: 6),
             Text(title, style: TextStyle(color: theme.textSecondary, fontSize: 11)),
             const SizedBox(height: 2),
@@ -727,10 +1061,10 @@ class _MainHubScreenState extends State<MainHubScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.primaryCyan.withOpacity(0.15),
+              color: AppColors.chessGreen.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.smart_toy, color: AppColors.primaryCyan, size: 22),
+            child: const Icon(Icons.smart_toy, color: AppColors.chessGreen, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -747,7 +1081,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
                         color: theme.surfaceElevatedColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text('$elo', style: const TextStyle(color: Color(0xFF81B64C), fontWeight: FontWeight.bold, fontSize: 10)),
+                      child: Text('$elo', style: const TextStyle(color: AppColors.chessGreen, fontWeight: FontWeight.bold, fontSize: 10)),
                     ),
                   ],
                 ),
@@ -764,7 +1098,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF81B64C),
+              backgroundColor: AppColors.chessGreen,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -776,64 +1110,244 @@ class _MainHubScreenState extends State<MainHubScreen> {
     );
   }
 
-  // TAB 2: PROBLEMAS
+  // TAB 2: TRILHA DE PROBLEMAS (PROGRESSION TRACK ESTILO CHESS.COM)
   Widget _buildPuzzlesTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _buildModeCard(
-          title: 'Quebra-Cabeças Infinitos',
-          subtitle: 'Treino ilimitado offline com calibração adaptativa de Elo e multiplicador de combo.',
-          icon: Icons.extension,
-          accentColor: const Color(0xFF81B64C),
-          onTap: () {
-            if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => InfinitePuzzlesScreen(ffi: ffi!)));
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildModeCard(
-          title: 'Escada de Problemas (Rush 3 Vidas)',
-          subtitle: 'Modo sobrevivência: resolva problemas de dificuldade crescente até acumular 3 erros.',
-          icon: Icons.trending_up,
-          accentColor: AppColors.secondaryAmber,
-          onTap: () {
-            if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => PuzzleLadderScreen(ffi: ffi!)));
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildModeCard(
-          title: 'Treino de Erros Próprios',
-          subtitle: 'Recurso Diamante gratuito: repita seus lances errados e aprenda a refutação correta.',
-          icon: Icons.replay,
-          accentColor: AppColors.accentEmerald,
-          onTap: () {
-            if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => RetryMistakesScreen(ffi: ffi!)));
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildModeCard(
-          title: 'Treinador de Coordenadas',
-          subtitle: 'Desafio de 30 segundos contra o relógio para dominar a visão de casas no tabuleiro.',
-          icon: Icons.speed,
-          accentColor: AppColors.primaryCyan,
-          onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CoordinateTrainerScreen()));
-          },
-        ),
-      ],
+    final theme = ThemeController.instance;
+    const totalPuzzlesInTrack = 40;
+    const zoneTitles = [
+      'Etapa 1: Acampamento dos Mates Básicos',
+      'Etapa 2: Vale dos Garfos e Cravadas',
+      'Etapa 3: Planalto dos Finais Táticos',
+      'Etapa 4: Fortaleza das Redes de Mate',
+      'Etapa 5: Cume dos Grandes Mestres',
+    ];
+    const offsets = [-46.0, 0.0, 46.0, 0.0];
+
+    return AnimatedBuilder(
+      animation: PlayerStatsService.instance,
+      builder: (context, _) {
+        final stats = PlayerStatsService.instance;
+        final currentProgress = stats.puzzleTrailNode.clamp(1, totalPuzzlesInTrack);
+        final completedCount = (currentProgress - 1).clamp(0, totalPuzzlesInTrack);
+
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          children: [
+            // Header de Progresso da Trilha
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.surfaceColor,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: theme.borderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.chessGreen.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.extension, color: AppColors.chessGreen, size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          Text('Trilha de Problemas', style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold, color: theme.textPrimary)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceElevated,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text('Elo ${stats.puzzleRating}', style: TextStyle(color: AppColors.chessGold, fontWeight: FontWeight.bold, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: completedCount / totalPuzzlesInTrack,
+                            backgroundColor: theme.surfaceElevatedColor,
+                            color: AppColors.chessGreen,
+                            minHeight: 6,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text('$completedCount / $totalPuzzlesInTrack', style: TextStyle(color: theme.textSecondary, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // Caminho Senoidal Contínuo / Trilha de PedrasChanfradas
+            ...List.generate(totalPuzzlesInTrack, (idx) {
+              final stepNum = idx + 1;
+              final isCompleted = stepNum < currentProgress;
+              final isCurrent = stepNum == currentProgress;
+              final isLocked = stepNum > currentProgress;
+              final isZoneStart = idx % 8 == 0;
+              final zoneIdx = (idx ~/ 8).clamp(0, zoneTitles.length - 1);
+
+              final double xOffset = offsets[idx % offsets.length];
+              final double prevOffset = idx > 0 ? offsets[(idx - 1) % offsets.length] : 0.0;
+
+              return Column(
+                children: [
+                  if (isZoneStart)
+                    Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.only(top: idx == 0 ? 4 : 24, bottom: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: theme.surfaceColor,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isLocked ? theme.borderColor : AppColors.chessGold.withOpacity(0.45),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isLocked ? Icons.lock_outline : Icons.flag_rounded,
+                            color: isLocked ? theme.textSecondary : AppColors.chessGold,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              zoneTitles[zoneIdx],
+                              style: TextStyle(
+                                color: isLocked ? theme.textSecondary : theme.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  if (idx > 0 && !isZoneStart)
+                    TrailConnectorSegment(
+                      fromOffsetX: prevOffset,
+                      toOffsetX: xOffset,
+                      isCompleted: isCompleted,
+                      height: 30,
+                    ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Transform.translate(
+                      offset: Offset(xOffset, 0),
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: !isLocked
+                                ? () {
+                                    if (ffi != null) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => InfinitePuzzlesScreen(
+                                            ffi: ffi!,
+                                            trailNode: stepNum,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                : null,
+                            child: Container(
+                              width: 68,
+                              height: 68,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                color: isCompleted
+                                    ? AppColors.chessGold
+                                    : (isCurrent ? AppColors.chessGreen : theme.surfaceElevatedColor.withOpacity(0.6)),
+                                border: Border.all(
+                                  color: isCurrent
+                                      ? Colors.white.withOpacity(0.85)
+                                      : (isCompleted ? Colors.white.withOpacity(0.6) : theme.borderColor),
+                                  width: 2.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: isCurrent
+                                        ? AppColors.primaryCyanDark
+                                        : (isCompleted ? const Color(0xFFB58012) : Colors.black38),
+                                    blurRadius: 0,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                  if (isCurrent)
+                                    BoxShadow(
+                                      color: AppColors.chessGreen.withOpacity(0.4),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                ],
+                              ),
+                              child: Center(
+                                child: isCompleted
+                                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 32)
+                                    : (isCurrent
+                                        ? Text(
+                                            '$stepNum',
+                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 22),
+                                          )
+                                        : Icon(Icons.lock_outline_rounded, color: theme.textSecondary.withOpacity(0.5), size: 24)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Problema $stepNum',
+                            style: TextStyle(
+                              color: isCurrent ? AppColors.chessGreen : (isCompleted ? theme.textPrimary : theme.textSecondary.withOpacity(0.5)),
+                              fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
+
+            const SizedBox(height: 24),
+          ],
+        );
+      },
     );
   }
 
-  // TAB 3: APRENDER
+  // TAB 3: APRENDER (TRILHA DE MAESTRIA & REPERTÓRIO)
   Widget _buildLearnTab() {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         _buildModeCard(
-          title: 'Trilha de Maestria (Estilo Duolingo)',
-          subtitle: 'Navegue pelo caminho senoidal com lições guiadas, mini-aulas e baterias táticas.',
+          title: 'Trilha de Maestria',
+          subtitle: 'Lições guiadas em curva senoidal com teoria e baterias táticas passo a passo.',
           icon: Icons.alt_route,
-          accentColor: const Color(0xFF81B64C),
+          accentColor: AppColors.chessGreen,
           onTap: () {
             if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => LearningTrackScreen(ffi: ffi!)));
           },
@@ -843,7 +1357,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
           title: 'Treinador de Repertório (SM-2)',
           subtitle: 'Memorização científica com repetição espaçada SuperMemo para linhas de abertura.',
           icon: Icons.psychology,
-          accentColor: AppColors.secondaryAmber,
+          accentColor: AppColors.chessGold,
           onTap: () {
             if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => RepertoireTrainerScreen(ffi: ffi!)));
           },
@@ -881,7 +1395,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
           title: 'Revisão de Partida & Coach IA',
           subtitle: 'Análise profunda CAPS2, gráfico de vantagem, detecção de tilt e cartões virais.',
           icon: Icons.analytics,
-          accentColor: const Color(0xFF81B64C),
+          accentColor: AppColors.chessGreen,
           onTap: () {
             if (ffi != null) {
               Navigator.of(context).push(
@@ -926,89 +1440,115 @@ class _MainHubScreenState extends State<MainHubScreen> {
     );
   }
 
-  // TAB 5: MAIS (Recursos Especiais, Torneios, Paletas)
+  // TAB 5: MAIS (MENU COMPLETO OFICIAL ESTILO CHESS.COM)
   Widget _buildMoreTab() {
-    final theme = ThemeController.instance;
-
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       children: [
-        _buildModeCard(
+        _buildMenuItem(
+          icon: Icons.emoji_events_outlined,
           title: 'Torneios (Sistema Suíço FIDE)',
-          subtitle: 'Organize campeonatos com níveis de Elo: Iniciante (300-800), Amador, Mestres ou Personalizado.',
-          icon: Icons.emoji_events,
-          accentColor: Colors.amberAccent,
+          subtitle: 'Campeonatos com faixas de Elo (Iniciante 300-800, Amador, Mestres)',
           onTap: () {
             if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => TournamentManagerScreen(ffi: ffi!)));
           },
         ),
-        const SizedBox(height: 12),
-        _buildModeCard(
+        _buildMenuItem(
+          icon: Icons.tune_rounded,
           title: 'Estúdio de Criação de Bots',
-          subtitle: 'Crie oponentes personalizados com personalidades táticas, posicional ou clássica.',
-          icon: Icons.tune,
-          accentColor: AppColors.primaryCyan,
+          subtitle: 'Crie robôs com estilos posicional, agressivo ou defensivo',
           onTap: () {
             if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => BotStudioScreen(ffi: ffi!)));
           },
         ),
-        const SizedBox(height: 12),
-        _buildModeCard(
-          title: 'Multiplayer Online P2P',
-          subtitle: 'Jogue online via WebRTC direto com STUN do Google. 100% gratuito e sem custos.',
+        _buildMenuItem(
           icon: Icons.wifi_tethering,
-          accentColor: AppColors.accentEmerald,
+          title: 'Multiplayer Online P2P',
+          subtitle: 'Disputa online direta via WebRTC sem custos de servidor',
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OnlineMultiplayerScreen()));
           },
         ),
-        const SizedBox(height: 12),
-        _buildModeCard(
+        _buildMenuItem(
+          icon: Icons.palette_outlined,
           title: 'Personalização Visual & Paletas',
-          subtitle: 'Alterne entre Modo Claro e Noite, escolha entre 8 paletas de tabuleiro e 5 estilos de peças.',
-          icon: Icons.palette,
-          accentColor: theme.accentColor,
+          subtitle: '8 paletas de tabuleiro, 5 estilos de peças e acentos FIDE',
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ThemeCustomizationScreen()));
           },
         ),
-        const SizedBox(height: 12),
-        _buildModeCard(
+        _buildMenuItem(
+          icon: Icons.people_outline,
           title: 'Pass & Play (2 Jogadores)',
-          subtitle: 'Jogue presencialmente no mesmo aparelho com relógio digital duplo espelhado.',
-          icon: Icons.people_alt,
-          accentColor: AppColors.secondaryAmber,
+          subtitle: 'Partida local no mesmo aparelho com relógio digital duplo',
           onTap: () {
             if (ffi != null) Navigator.of(context).push(MaterialPageRoute(builder: (_) => PassAndPlayScreen(ffi: ffi!)));
           },
         ),
-        const SizedBox(height: 12),
-        _buildModeCard(
+        _buildMenuItem(
+          icon: Icons.casino_outlined,
           title: 'Xadrez 960 (Fischer Random)',
-          subtitle: 'Sorteio aleatório de uma das 960 posições oficiais de Bobby Fischer.',
-          icon: Icons.casino,
-          accentColor: Colors.purpleAccent,
+          subtitle: 'Sorteio aleatório de uma das 960 posições de Bobby Fischer',
           onTap: () {
             if (ffi != null) {
               final (seed, fen) = ffi!.getRandomChess960();
               final game960 = ffi!.newGameFromFen(fen);
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => BotGameScreen(ffi: ffi!, botName: 'Xadrez 960 (#$seed)', botElo: 1400),
-                ),
+                MaterialPageRoute(builder: (_) => BotGameScreen(ffi: ffi!, botName: 'Xadrez 960 (#$seed)', botElo: 1400)),
               ).then((_) => ffi!.freeGame(game960));
             }
           },
         ),
-        const SizedBox(height: 12),
-        _buildModeCard(
-          title: 'Verificar Atualizações',
-          subtitle: 'Versão atual: ${AppUpdateService.currentVersion}. Notificações e novas releases no GitHub.',
+        _buildMenuItem(
+          icon: Icons.help_outline,
+          title: 'Central de Ajuda & Regras FIDE',
+          subtitle: 'Manual oficial de regras, FAQs e guia de operação',
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HelpSupportScreen()));
+          },
+        ),
+        _buildMenuItem(
           icon: Icons.system_update_alt,
-          accentColor: const Color(0xFF81B64C),
+          title: 'Verificar Atualizações',
+          subtitle: 'Versão instalada: ${AppUpdateService.currentVersion}',
           onTap: _manualCheckForUpdate,
         ),
       ],
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    final theme = ThemeController.instance;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: theme.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: theme.borderColor),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          onTap: isRustReady ? onTap : null,
+          leading: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.chessGreen.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppColors.chessGreen, size: 20),
+          ),
+          title: Text(title, style: TextStyle(color: theme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+          subtitle: Text(subtitle, style: TextStyle(color: theme.textSecondary, fontSize: 11)),
+          trailing: Icon(Icons.chevron_right, color: theme.textSecondary.withOpacity(0.5), size: 20),
+        ),
+      ),
     );
   }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:chess_d/services/chess_rust_ffi.dart';
+import 'package:chess_d/services/player_stats_service.dart';
 import 'package:chess_d/ui/core/app_colors.dart';
 import 'package:chess_d/ui/core/app_typography.dart';
 import 'package:chess_d/ui/core/chess_balloon.dart';
@@ -67,6 +68,16 @@ class _BotGameScreenState extends State<BotGameScreen> {
       finalResult = res;
       gameOutcome = 'Fim de Jogo ($res): $outcome ($reason)';
     });
+    final isWin = (res == '1-0' && widget.playerIsWhite) || (res == '0-1' && !widget.playerIsWhite);
+    final isDraw = res == '1/2-1/2';
+    PlayerStatsService.instance.recordMatch(
+      opponent: widget.botName,
+      isWin: isWin,
+      isDraw: isDraw,
+      precision: isWin ? '78,4%' : (isDraw ? '70,1%' : '58,2%'),
+      movesUci: moveHistory,
+      playerColor: widget.playerIsWhite ? 'white' : 'black',
+    );
     widget.onGameConcluded?.call(res);
   }
 

@@ -16,8 +16,8 @@ void main() {
       expect(ctrl.themeMode, equals(AppThemeMode.dark));
       expect(ctrl.boardTheme, equals(BoardVisualTheme.tournamentGreen));
       expect(ctrl.pieceTheme, equals(PieceVisualTheme.classicStaunton));
-      expect(ctrl.accentTheme, equals(AccentVisualTheme.cyan));
-      expect(ctrl.accentColor, equals(const Color(0xFF00E5FF)));
+      expect(ctrl.accentTheme, equals(AccentVisualTheme.chessGreen));
+      expect(ctrl.accentColor, equals(const Color(0xFF81B64C)));
     });
 
     test('ThemeController alterna entre Modo Claro e Modo Noite', () {
@@ -67,7 +67,7 @@ void main() {
       ctrl.resetDefaults();
       expect(ctrl.boardTheme, equals(BoardVisualTheme.tournamentGreen));
       expect(ctrl.pieceTheme, equals(PieceVisualTheme.classicStaunton));
-      expect(ctrl.accentTheme, equals(AccentVisualTheme.cyan));
+      expect(ctrl.accentTheme, equals(AccentVisualTheme.chessGreen));
       expect(ctrl.themeMode, equals(AppThemeMode.dark));
     });
 
